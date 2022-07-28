@@ -1,0 +1,342 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity", "fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider             = "postgres"
+  url                  = env("DATABASE_URL")
+  referentialIntegrity = "foreignKeys"
+}
+
+model User {
+  id               Int      @id @default(autoincrement())
+  firstName        String?  @db.VarChar(250)
+  middleName       String?  @db.VarChar(250)
+  lastName         String?  @db.VarChar(250)
+  address          String?  @db.VarChar(150)
+  age              Int?
+  gender           String?  @db.VarChar(15)
+  email            String   @unique() @db.VarChar(320)
+  mobile           Int?
+  password         String   @db.Text
+  role             String?  @db.VarChar(20)
+  isActive         Boolean  @default(true)
+  isEmailVerified  Boolean? @default(false)
+  isMobileVerified Boolean? @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  Session Session[]
+  Otp     Otp[]
+
+  @@map("users")
+}
+
+model Session {
+  id           Int      @id @unique @default(autoincrement())
+  refreshToken String   @db.Uuid
+  userAgent    String   @db.VarChar(250)
+  ipAddress    String   @db.VarChar(50)
+  role         String   @db.VarChar(20)
+  email        String   @db.VarChar(320)
+  isActive     Boolean  @default(true)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("sessions")
+}
+
+model Otp {
+  id        Int      @id @unique @default(autoincrement())
+  otp       Int
+  user      User     @relation(fields: [userId], references: [id])
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId Int
+
+  @@map("otp")
+}
+
+model Cryptocurrency {
+  id                     Int                     @id @unique() @default(autoincrement())
+  name                   String                  @db.VarChar(256)
+  symbol                 String                  @db.VarChar(20)
+  slug                   String                  @unique() @db.VarChar(120)
+  // Valid Values "active", "inactive", "untracked"
+  status                 String                  @db.Char(10)
+  sign                   String?                 @db.VarChar(10)
+  isActive               Boolean                 @default(true)
+  cryptocurrencymetadata CryptocurrencyMetadata?
+  platform               Platform?
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+
+  MarketData MarketData[]
+  OHLCV      OHLCV[]
+  Exchange   Exchange[]
+
+  @@map("cryptocurrency")
+}
+
+model Platform {
+  cryptoId       Int            @id @unique()
+  parentCryptoId Int
+  tokenAddress   String         @db.VarChar(256)
+  cryptocurrency Cryptocurrency @relation(fields: [cryptoId], references: [id], onDelete: Cascade)
+
+  @@map("platform")
+}
+
+model CryptocurrencyMetadata {
+  cryptoId                      Int                   @id @unique()
+  cryptocurrency                Cryptocurrency        @relation(fields: [cryptoId], references: [id], onDelete: Cascade)
+  logoUrl                       String                @db.Text
+  description                   String                @db.Text
+  category                      Category              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  urls                          Urls?                 @relation(fields: [urlsId], references: [id], onDelete: Cascade)
+  rank                          Int?
+  notice                        String?
+  selfReportedCirculatingSupply Float?
+  selfReportedMarketCap         Float?
+  selfReportedTags              String?
+  contractAddress               BlockchainContracts[]
+  dateAdded                     DateTime              @db.Timestamptz()
+  dateLaunched                  DateTime              @db.Timestamptz()
+  createdAt                     DateTime              @default(now())
+  updatedAt                     DateTime              @updatedAt
+
+  categoryId                    Int
+  urlsId                        Int
+  TagsOnCryptocurrencyMetadatas TagsOnCryptocurrencyMetadatas[]
+
+  @@map("cryptocurrency_metadata")
+}
+
+model BlockchainContracts {
+  id              Int    @id @unique @default(autoincrement())
+  name            String
+  contractAddress String
+
+  cryptocurrencyMetadata CryptocurrencyMetadata @relation(fields: [cryptoId], references: [cryptoId])
+  cryptoId               Int
+
+  @@map("blockchain_contracts")
+}
+
+model Urls {
+  id                     Int                      @id @unique @default(autoincrement())
+  //Lists
+  website                String[]
+  technicalDocumentation String[]
+  explorer               String[]
+  sourceCode             String[]
+  messageBoard           String[]
+  chat                   String[]
+  announcement           String[]
+  reddit                 String[]
+  twitter                String[]
+  telegram               String[]
+  fee                    String[]
+  CryptocurrencyMetadata CryptocurrencyMetadata[]
+  ExchangeMetadata       ExchangeMetadata[]
+
+  @@map("urls")
+}
+
+model Category {
+  id                     Int                      @id @unique @default(autoincrement())
+  name                   String                   @unique @db.VarChar(256)
+  slug                   String                   @unique
+  CryptocurrencyMetadata CryptocurrencyMetadata[]
+
+  @@map("category")
+}
+
+model Tags {
+  id        Int       @id @unique @default(autoincrement())
+  name      String    @unique
+  slug      String    @unique
+  tagsGroup TagsGroup @relation(fields: [tagsGroupId], references: [id])
+
+  TagsOnCryptocurrencyMetadatas TagsOnCryptocurrencyMetadatas[]
+  tagsGroupId                   Int
+
+  @@map("tags")
+}
+
+model TagsOnCryptocurrencyMetadatas {
+  tags                     Tags                   @relation(fields: [tagsId], references: [id])
+  tagsId                   Int
+  cryptocurrenyMetadatas   CryptocurrencyMetadata @relation(fields: [cryptocurrencyMetadataId], references: [cryptoId])
+  cryptocurrencyMetadataId Int
+  assignedAt               DateTime               @default(now())
+  assignedBy               String
+
+  @@id([tagsId, cryptocurrencyMetadataId])
+  @@map("tags_on_cryptocurrency_metadata")
+}
+
+model TagsGroup {
+  id   Int    @id @unique @default(autoincrement())
+  name String @unique
+
+  Tags Tags[]
+
+  @@map("tags_group")
+}
+
+model OHLCV {
+  id             Int            @id @default(autoincrement())
+  cryptocurrency Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
+  openPrice      Float
+  highPrice      Float
+  lowPrice       Float
+  closePrice     Float
+  tradedVolume   Int
+  createdAt      DateTime       @db.Timestamptz()
+
+  cryptocurrencyId Int
+  Exchange         Exchange? @relation(fields: [exchangeId], references: [id])
+  exchangeId       Int?
+
+  @@map("ohlcv")
+}
+
+model MarketData {
+  id                Int            @id @unique @default(autoincrement())
+  cryptocurrency    Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
+  numMarketPair     Int?
+  circulatingSupply Float?
+  totalSupply       Float?
+  maxSupply         Float?
+  marketCap         Float?
+  updatedAt         DateTime       @updatedAt
+
+  cryptocurrencyId Int
+  Exchange         Exchange? @relation(fields: [exchangeId], references: [id], onDelete: NoAction)
+  exchangeId       Int?
+
+  @@map("market_data")
+}
+
+model Currency {
+  id            Int             @id @unique @default(autoincrement())
+  name          String
+  slug          String?
+  ExchangeRates ExchangeRates[]
+
+  @@map("currency")
+}
+
+model ExchangeRates {
+  id       Int      @id @unique @default(autoincrement())
+  currency Currency @relation(fields: [currencyId], references: [id])
+
+  currencyId Int
+
+  @@map("exchange_rates")
+}
+
+model Exchange {
+  id        Int      @unique() @default(autoincrement())
+  name      String   @db.VarChar(256)
+  slug      String   @db.VarChar(256)
+  //Valid values are ('active','inactive','untracked','tracked')
+  status    String   @db.VarChar(10)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  MarketData       MarketData[]
+  OHLCV            OHLCV[]
+  ExchangeMetadata ExchangeMetadata[]
+
+  Cryptocurrency Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
+  ExchangeFee    ExchangeFee    @relation(fields: [exchangeFeeId], references: [id])
+
+  exchangeFeeId    Int
+  cryptocurrencyId Int
+
+  @@map("exchange")
+}
+
+model ExchangeCategory {
+  id       Int    @unique @default(autoincrement())
+  name     String @unique @db.VarChar(256)
+  slug     String @unique
+  category String @db.VarChar(256)
+
+  ExchangeMetadata ExchangeMetadata[]
+
+  @@map("exchange_category")
+}
+
+model ExchangeMetadata {
+  exchangeMetaId      Int      @id @unique
+  Exchange            Exchange @relation(fields: [exchangeMetaId], references: [id])
+  logoUrl             String   @db.Text
+  description         String   @db.Text
+  notice              String
+  countries           String[]
+  fiats               String[]
+  rank                Int
+  firstHistoricalData DateTime @db.Timestamptz()
+  lastHistoricalData  DateTime @db.Timestamptz()
+  weeklyVisits        Int
+  dateLaunched        DateTime @db.Timestamptz()
+
+  ExchangeCategory ExchangeCategory @relation(fields: [exchangeCategoryId], references: [id])
+  Urls             Urls             @relation(fields: [UrlsId], references: [id])
+
+  UrlsId             Int
+  exchangeCategoryId Int
+
+  @@map("exchange_metadata")
+}
+
+model ExchangeFee {
+  id       Int    @unique @default(autoincrement())
+  feeType  String @db.VarChar(256)
+  makerFee Float
+  takerFee Float
+
+  Exchange Exchange[]
+
+  @@map("exchange_fee")
+}
+
+model GlobalMetrics {
+  id                              Int      @id @unique @default(autoincrement())
+  activeCryptocurrencies          Int?
+  totalCryptocurrencies           Int?
+  activeMarketPairs               Int?
+  activeExchanges                 Int?
+  totalExchanges                  Int?
+  ethDominance                    Float?
+  btcDominance                    Float?
+  ethDominanceYesterday           Float?
+  btcDominanceYesterday           Float?
+  ethDominance24hPercentageChange Float?
+  btcDominance24hPercentageChange Float?
+  defiVolume24h                   Float?
+  defiVolume24hReported           Float?
+  defi24hPercentageChange         Float?
+  defiMarketCap                   Float?
+  stablecoinVolume24h             Float?
+  stablecoinVolume24hReported     Float?
+  stablecoinMarketCap             Float?
+  stablecoin24hPercentageChange   Float?
+  derivativesVolume24h            Float?
+  derivativesVolume24hReported    Float?
+  derivatives24hPercentageChange  Float?
+  timestamp                       DateTime @unique @db.Timestamptz()
+  createdAt                       DateTime @default(now())
+  updatedAt                       DateTime @updatedAt
+
+  @@map("global_metrics")
+}
