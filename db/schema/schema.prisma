@@ -64,6 +64,7 @@ model Otp {
 
 model Cryptocurrency {
   id                     Int                     @id @unique() @default(autoincrement())
+  cmcId                  Int                     @unique()
   name                   String                  @db.VarChar(256)
   symbol                 String                  @db.VarChar(20)
   slug                   String                  @unique() @db.VarChar(120)
