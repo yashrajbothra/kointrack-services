@@ -55,32 +55,73 @@ module.exports = {
           selfReportedTags: apiData.self_reported_tags,
           dateAdded: apiData.date_added,
           dateLaunched: apiData.date_launched,
-          cryptocurrency: {
+          Cryptocurrency: {
             create: {
               name: apiData.name,
               slug: apiData.slug,
               symbol: apiData.symbol,
-              platform: {
+              Platform: {
                 create: {
                   tokenAddress: apiData.token_address,
                 },
               },
             },
           },
-          urls: {
+          Urls: {
             create: {
-              website: apiData.website,
-              technicalDocumentation: apiData.technical_documentation,
-              explorer: apiData.explorer,
-              sourceCode: apiData.source_code,
-              messageBoard: apiData.message_board,
+              website: apiData.urls.website,
+              technicalDocumentation: apiData.urls.technical_documentation,
+              explorer: apiData.urls.explorer,
+              sourceCode: apiData.urls.source_code,
+              messageBoard: apiData.urls.message_board,
               chat: apiData.chat,
-              announcement: apiData.announcement,
-              reddit: apiData.reddit,
-              twitter: apiData.twitter,
+              announcement: apiData.urls.announcement,
+              reddit: apiData.urls.reddit,
+              twitter: apiData.urls.twitter,
             },
           },
-          tags: { create: { name: apiData.name } },
+          Tags: { create: { name: apiData.name } },
+        },
+      };
+    },
+    queryType: "create",
+  },
+  "/v1/cryptocurrency/listings/latest": {
+    params(params) {
+      params;
+    },
+
+    db: { name: "cryptocurrency" },
+    query(apiData) {
+      return {
+        data: {
+          name: apiData.name,
+          symbol: apiData.symbol,
+          MarketData: {
+            create: {
+              numMarketpair: apiData.num_market_pairs,
+            },
+          },
+          Exchange: {
+            create: {
+              name: apiData.market_pairs.exchange.name,
+              slug: apiData.market_pairs.exchange.slug,
+              symbol: apiData.market_pairs.market_pair_base.symbol,
+            },
+            ExchangeMetadata: {
+              create: {
+                marketPairs: apiData.market_pairs.market_pair,
+              },
+              ExchnageCategory: {
+                create: { category: apiData.market_pairs.category },
+                ExchangeFee: {
+                  create: {
+                    feeType: apiData.market_pairs.fee_type,
+                  },
+                },
+              },
+            },
+          },
         },
       };
     },

@@ -9,6 +9,10 @@ datasource db {
   referentialIntegrity = "foreignKeys"
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+}
+
 model User {
   id               Int      @id @default(autoincrement())
   firstName        String?  @db.VarChar(250)
@@ -64,7 +68,6 @@ model Otp {
 
 model Cryptocurrency {
   id                     Int                     @id @unique() @default(autoincrement())
-  cmcId                  Int                     @unique()
   name                   String                  @db.VarChar(256)
   symbol                 String                  @db.VarChar(20)
   slug                   String                  @unique() @db.VarChar(120)
@@ -77,9 +80,10 @@ model Cryptocurrency {
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
 
-  MarketData MarketData[]
-  OHLCV      OHLCV[]
-  Exchange   Exchange[]
+  MarketData     MarketData[]
+  OHLCV          OHLCV[]
+  Urls           Urls[]
+  CryptoExchange CryptoExchange[]
 
   @@map("cryptocurrency")
 }
@@ -94,22 +98,19 @@ model Platform {
 }
 
 model CryptocurrencyMetadata {
-  cryptoId                      Int                   @id @unique()
-  cryptocurrency                Cryptocurrency        @relation(fields: [cryptoId], references: [id], onDelete: Cascade)
-  logoUrl                       String                @db.Text
-  description                   String                @db.Text
-  category                      Category              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  urls                          Urls?                 @relation(fields: [urlsId], references: [id], onDelete: Cascade)
-  rank                          Int?
-  notice                        String?
+  cryptoId                      Int            @id @unique()
+  cryptocurrency                Cryptocurrency @relation(fields: [cryptoId], references: [id], onDelete: Cascade)
+  logoUrl                       String         @db.Text
+  description                   String         @db.Text
+  category                      Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  urls                          Urls           @relation(fields: [urlsId], references: [id], onDelete: Cascade)
+  notice                        String
   selfReportedCirculatingSupply Float?
   selfReportedMarketCap         Float?
   selfReportedTags              String?
-  contractAddress               BlockchainContracts[]
-  dateAdded                     DateTime              @db.Timestamptz()
-  dateLaunched                  DateTime              @db.Timestamptz()
-  createdAt                     DateTime              @default(now())
-  updatedAt                     DateTime              @updatedAt
+  contractAddress               Contracts[]
+  dateAdded                     DateTime       @db.Timestamptz()
+  dateLaunched                  DateTime       @db.Timestamptz()
 
   categoryId                    Int
   urlsId                        Int
@@ -118,15 +119,13 @@ model CryptocurrencyMetadata {
   @@map("cryptocurrency_metadata")
 }
 
-model BlockchainContracts {
+model Contracts {
   id              Int    @id @unique @default(autoincrement())
   name            String
   contractAddress String
 
   cryptocurrencyMetadata CryptocurrencyMetadata @relation(fields: [cryptoId], references: [cryptoId])
   cryptoId               Int
-
-  @@map("blockchain_contracts")
 }
 
 model Urls {
@@ -137,6 +136,7 @@ model Urls {
   explorer               String[]
   sourceCode             String[]
   messageBoard           String[]
+  blog                   String[]
   chat                   String[]
   announcement           String[]
   reddit                 String[]
@@ -145,6 +145,8 @@ model Urls {
   fee                    String[]
   CryptocurrencyMetadata CryptocurrencyMetadata[]
   ExchangeMetadata       ExchangeMetadata[]
+  Cryptocurrency         Cryptocurrency?          @relation(fields: [cryptocurrencyId], references: [id])
+  cryptocurrencyId       Int?
 
   @@map("urls")
 }
@@ -211,16 +213,17 @@ model OHLCV {
 model MarketData {
   id                Int            @id @unique @default(autoincrement())
   cryptocurrency    Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
+  rank              Int?
   numMarketPair     Int?
   circulatingSupply Float?
   totalSupply       Float?
   maxSupply         Float?
   marketCap         Float?
   updatedAt         DateTime       @updatedAt
-
-  cryptocurrencyId Int
-  Exchange         Exchange? @relation(fields: [exchangeId], references: [id], onDelete: NoAction)
-  exchangeId       Int?
+  Currency          Currency[]
+  cryptocurrencyId  Int
+  Exchange          Exchange?      @relation(fields: [exchangeId], references: [id], onDelete: NoAction)
+  exchangeId        Int?
 
   @@map("market_data")
 }
@@ -230,6 +233,8 @@ model Currency {
   name          String
   slug          String?
   ExchangeRates ExchangeRates[]
+  MarketData    MarketData?     @relation(fields: [marketDataId], references: [id])
+  marketDataId  Int?
 
   @@map("currency")
 }
@@ -244,9 +249,10 @@ model ExchangeRates {
 }
 
 model Exchange {
-  id        Int      @unique() @default(autoincrement())
-  name      String   @db.VarChar(256)
-  slug      String   @db.VarChar(256)
+  id   Int    @unique() @default(autoincrement())
+  name String @db.VarChar(256)
+  slug String @db.VarChar(256)
+
   //Valid values are ('active','inactive','untracked','tracked')
   status    String   @db.VarChar(10)
   isActive  Boolean  @default(true)
@@ -256,23 +262,19 @@ model Exchange {
   MarketData       MarketData[]
   OHLCV            OHLCV[]
   ExchangeMetadata ExchangeMetadata[]
-
-  Cryptocurrency Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
-  ExchangeFee    ExchangeFee    @relation(fields: [exchangeFeeId], references: [id])
-
-  exchangeFeeId    Int
-  cryptocurrencyId Int
+  CryptoExchange   CryptoExchange[]
+  ExchangeFee      ExchangeFee[]
 
   @@map("exchange")
 }
 
 model ExchangeCategory {
-  id       Int    @unique @default(autoincrement())
-  name     String @unique @db.VarChar(256)
-  slug     String @unique
-  category String @db.VarChar(256)
-
-  ExchangeMetadata ExchangeMetadata[]
+  id                 Int               @unique @default(autoincrement())
+  name               String            @unique @db.VarChar(256)
+  slug               String            @unique
+  category           String            @db.VarChar(256)
+  ExchangeMetadata   ExchangeMetadata? @relation(fields: [exchangeMetadataId], references: [exchangeMetaId])
+  exchangeMetadataId Int?
 
   @@map("exchange_category")
 }
@@ -286,58 +288,70 @@ model ExchangeMetadata {
   countries           String[]
   fiats               String[]
   rank                Int
+  coins               Int
+  marketPairs         String   @db.VarChar(100)
+  markets             Int
   firstHistoricalData DateTime @db.Timestamptz()
   lastHistoricalData  DateTime @db.Timestamptz()
   weeklyVisits        Int
   dateLaunched        DateTime @db.Timestamptz()
 
-  ExchangeCategory ExchangeCategory @relation(fields: [exchangeCategoryId], references: [id])
-  Urls             Urls             @relation(fields: [UrlsId], references: [id])
+  Urls Urls @relation(fields: [UrlsId], references: [id])
 
   UrlsId             Int
   exchangeCategoryId Int
+  ExchnageFee        ExchangeFee[]
+  ExchangeCategory   ExchangeCategory[]
 
   @@map("exchange_metadata")
 }
 
 model ExchangeFee {
-  id       Int    @unique @default(autoincrement())
-  feeType  String @db.VarChar(256)
-  makerFee Float
-  takerFee Float
-
-  Exchange Exchange[]
+  id                 Int               @unique @default(autoincrement())
+  feeType            String            @db.VarChar(256)
+  makerFee           Float
+  takerFee           Float
+  Exchange           Exchange?         @relation(fields: [exchangeId], references: [id])
+  exchangeId         Int?
+  ExchangeMetadata   ExchangeMetadata? @relation(fields: [exchangeMetadataId], references: [exchangeMetaId])
+  exchangeMetadataId Int?
 
   @@map("exchange_fee")
 }
 
+model CryptoExchange {
+  cryptoCurrency   Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id])
+  cryptocurrencyId Int
+  exchange         Exchange       @relation(fields: [exchangeId], references: [id])
+  exchangeId       Int
+
+  @@id([exchangeId, cryptocurrencyId])
+  @@map("crypto_exchange")
+}
+
 model GlobalMetrics {
   id                              Int      @id @unique @default(autoincrement())
-  activeCryptocurrencies          Int?
-  totalCryptocurrencies           Int?
-  activeMarketPairs               Int?
-  activeExchanges                 Int?
-  totalExchanges                  Int?
-  ethDominance                    Float?
-  btcDominance                    Float?
-  ethDominanceYesterday           Float?
-  btcDominanceYesterday           Float?
-  ethDominance24hPercentageChange Float?
-  btcDominance24hPercentageChange Float?
-  defiVolume24h                   Float?
-  defiVolume24hReported           Float?
-  defi24hPercentageChange         Float?
-  defiMarketCap                   Float?
-  stablecoinVolume24h             Float?
-  stablecoinVolume24hReported     Float?
-  stablecoinMarketCap             Float?
-  stablecoin24hPercentageChange   Float?
-  derivativesVolume24h            Float?
-  derivativesVolume24hReported    Float?
-  derivatives24hPercentageChange  Float?
-  timestamp                       DateTime @unique @db.Timestamptz()
+  activeCryptocurrencies          Int
+  totalCryptocurrencies           Int
+  activeMarketPairs               Int
+  activeExchanges                 Int
+  totalExchanges                  Int
+  ethDominance                    Float
+  btcDominance                    Float
+  ethDominanceYesterday           Float
+  btcDominanceYesterday           Float
+  ethDominance24hPercentageChange Float
+  btcDominance24hPercentageChange Float
+  defiVolume24h                   Float
+  defiVolume24hReported           Float
+  defiMarketCap                   Float
+  stablecoinVolume24h             Float
+  stablecoinVolume24hReported     Float
+  stablecoinMarketCap             Float
+  stablecoin24hPercentageChange   Float
+  derivativesVolume24h            Float
+  derivativesVolume24hReported    Float
+  derivatives24hPercentageChange  Float
   createdAt                       DateTime @default(now())
   updatedAt                       DateTime @updatedAt
-
-  @@map("global_metrics")
 }
