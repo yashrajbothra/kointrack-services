@@ -28,6 +28,12 @@ module.exports = {
         derivativesVolume24h: apiData.derivatives_volume_24h,
         derivativesVolume24hReported: apiData.derivatives_volume_24h_reported,
         derivatives24hPercentageChange: apiData.derivatives_24h_percentage_change,
+        totalMarketCap: apiData.total_market_cap,
+        totalVolume24h: apiData.total_volume_24h,
+        totalVolume24hReported: apiData.total_volume_24h_reported,
+        altcoinVolume24h: apiData.altcoin_volume_24h,
+        altcoinVolume24hReported: apiData.altcoin_volume_24h_reported,
+        altcoinMarketCap: apiData.altcoin_market_cap,
         timestamp: apiData.last_updated,
       };
     },
