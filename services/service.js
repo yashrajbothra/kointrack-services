@@ -3,9 +3,9 @@ const instance = require('../axios/instance');
 const connectors = require('../connectors');
 const logger = require('../utils/logger');
 
-const addService = async (url) => {
+const addService = async (url, params = {}) => {
   const mapping = connectors[url];
-  const addServiceData = await instance.get(url, { params: mapping.params })
+  const addServiceData = await instance.get(url, { params: mapping.params(params) })
     .then((res) => res.data.data);
 
   let postedData;

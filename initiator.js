@@ -11,5 +11,7 @@ const allJobs = [
 ];
 
 allJobs.forEach((job) => {
-  if (job.name === jobName) { addService(job.url); }
+  if (job.name === jobName) {
+    addService(job.url);
+  }
 });
