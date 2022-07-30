@@ -1,8 +1,8 @@
 module.exports = {
-  "/v1/global-metrics/quotes/latest": {
+  '/v1/global-metrics/quotes/latest': {
     params() {},
     db: {
-      name: "globalMetrics",
+      name: 'globalMetrics',
     },
     query(apiData) {
       return {
@@ -34,14 +34,14 @@ module.exports = {
         timestamp: apiData.last_updated,
       };
     },
-    queryType: "upsert",
+    queryType: 'upsert',
     upsertOn: (apiData) => ({ timestamp: apiData.last_updated }),
   },
-  "/v2/cryptocurrency/info": {
+  '/v2/cryptocurrency/info': {
     params(params) {
-      params;
+      return params;
     },
-    db: { name: "cryptocurrencyMetadata" },
+    db: { name: 'cryptocurrencyMetadata' },
     query(apiData) {
       return {
         data: {
@@ -84,14 +84,14 @@ module.exports = {
         },
       };
     },
-    queryType: "create",
+    queryType: 'create',
   },
-  "/v1/cryptocurrency/listings/latest": {
+  '/v1/cryptocurrency/listings/latest': {
     params(params) {
-      params;
+      return params;
     },
 
-    db: { name: "cryptocurrency" },
+    db: { name: 'cryptocurrency' },
     query(apiData) {
       return {
         data: {
@@ -125,6 +125,6 @@ module.exports = {
         },
       };
     },
-    queryType: "create",
+    queryType: 'create',
   },
 };
