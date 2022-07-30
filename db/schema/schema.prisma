@@ -76,9 +76,10 @@ model Cryptocurrency {
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
 
-  MarketData MarketData[]
-  OHLCV      OHLCV[]
-  Exchange   Exchange[]
+  MarketData     MarketData[]
+  OHLCV          OHLCV[]
+  CryptoExchange CryptoExchange[]
+  Exchange       Exchange[]
 
   @@map("cryptocurrency")
 }
@@ -136,6 +137,7 @@ model Urls {
   explorer               String[]
   sourceCode             String[]
   messageBoard           String[]
+  blog                   String[]
   chat                   String[]
   announcement           String[]
   reddit                 String[]
@@ -210,6 +212,7 @@ model OHLCV {
 model MarketData {
   id                Int            @id @unique @default(autoincrement())
   cryptocurrency    Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
+  rank              Int?
   numMarketPair     Int?
   circulatingSupply Float?
   totalSupply       Float?
@@ -255,23 +258,22 @@ model Exchange {
   MarketData       MarketData[]
   OHLCV            OHLCV[]
   ExchangeMetadata ExchangeMetadata[]
-
-  Cryptocurrency Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
-  ExchangeFee    ExchangeFee    @relation(fields: [exchangeFeeId], references: [id])
-
+  Cryptocurrency   Cryptocurrency     @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
+  ExchangeFee      ExchangeFee        @relation(fields: [exchangeFeeId], references: [exchangeId])
   exchangeFeeId    Int
   cryptocurrencyId Int
+  CryptoExchange   CryptoExchange[]
 
   @@map("exchange")
 }
 
 model ExchangeCategory {
-  id       Int    @unique @default(autoincrement())
-  name     String @unique @db.VarChar(256)
-  slug     String @unique
-  category String @db.VarChar(256)
-
-  ExchangeMetadata ExchangeMetadata[]
+  id                             Int               @unique @default(autoincrement())
+  name                           String            @unique @db.VarChar(256)
+  slug                           String            @unique
+  category                       String            @db.VarChar(256)
+  ExchangeMetadata               ExchangeMetadata? @relation(fields: [exchangeMetadataExchangeMetaId], references: [exchangeMetaId])
+  exchangeMetadataExchangeMetaId Int?
 
   @@map("exchange_category")
 }
@@ -282,32 +284,44 @@ model ExchangeMetadata {
   logoUrl             String   @db.Text
   description         String   @db.Text
   notice              String
-  countries           String[]
-  fiats               String[]
   rank                Int
+  marketPairs         String   @db.VarChar(100)
+  markets             Int
   firstHistoricalData DateTime @db.Timestamptz()
   lastHistoricalData  DateTime @db.Timestamptz()
   weeklyVisits        Int
   dateLaunched        DateTime @db.Timestamptz()
 
-  ExchangeCategory ExchangeCategory @relation(fields: [exchangeCategoryId], references: [id])
-  Urls             Urls             @relation(fields: [UrlsId], references: [id])
+  Urls Urls @relation(fields: [UrlsId], references: [id])
 
   UrlsId             Int
   exchangeCategoryId Int
+  ExchnageFee        ExchangeFee[]
+  ExchangeCategory   ExchangeCategory[]
 
   @@map("exchange_metadata")
 }
 
 model ExchangeFee {
-  id       Int    @unique @default(autoincrement())
-  feeType  String @db.VarChar(256)
-  makerFee Float
-  takerFee Float
-
-  Exchange Exchange[]
+  exchangeId         Int               @id @unique
+  feeType            String            @db.VarChar(256)
+  makerFee           Float
+  takerFee           Float
+  ExchangeMetadata   ExchangeMetadata? @relation(fields: [exchangeMetadataId], references: [exchangeMetaId])
+  exchangeMetadataId Int?
+  Exchange           Exchange[]
 
   @@map("exchange_fee")
+}
+
+model CryptoExchange {
+  cryptoCurrency   Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id])
+  cryptocurrencyId Int
+  exchange         Exchange       @relation(fields: [exchangeId], references: [id])
+  exchangeId       Int
+
+  @@id([exchangeId, cryptocurrencyId])
+  @@map("crypto_exchange")
 }
 
 model GlobalMetrics {
