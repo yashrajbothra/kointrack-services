@@ -7,7 +7,7 @@ const allBatches = {
   'batch-1': [{
     name: 'globalMetricsLatest',
     url: '/v1/global-metrics/quotes/latest',
-    interval: '1000',
+    interval: '600000',
   },
   ],
 };
