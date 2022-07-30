@@ -6,7 +6,9 @@ module.exports = {
     },
     query(apiData) {
       return {
-        activeCryptocurrencies: apiData.active_cryptocurrencies,
+        where: { timestamp: apiData.last_updated },
+        create: {
+          activeCryptocurrencies: apiData.active_cryptocurrencies,
         totalCryptocurrencies: apiData.total_cryptocurrencies,
         activeMarketPairs: apiData.active_market_pairs,
         activeExchanges: apiData.active_exchanges,
@@ -35,10 +37,11 @@ module.exports = {
         altcoinVolume24hReported: apiData.altcoin_volume_24h_reported,
         altcoinMarketCap: apiData.altcoin_market_cap,
         timestamp: apiData.last_updated,
+        },
+        update: {},
       };
     },
     queryType: 'upsert',
-    upsertOn: (apiData) => ({ timestamp: apiData.last_updated }),
   },
 
   '/v2/cryptocurrency/info': {

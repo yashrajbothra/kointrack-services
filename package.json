@@ -31,7 +31,7 @@
   },
   "prisma": {
     "seed": "node prisma/seed.js",
-    "schema": "../kointrack-explorer-api/src/db/schema/schema.prisma"
+    "schema": "./db/schema/schema.prisma"
   },
   "devDependencies": {
     "@faker-js/faker": "^7.3.0",
