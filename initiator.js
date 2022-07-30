@@ -16,6 +16,7 @@ for (const batch in allBatches) {
   if (batch === batchName) {
     const currBatch = allBatches[batchName];
     currBatch.forEach((job) => {
+      addService(job.url);
       setInterval(() => { addService(job.url); }, job.interval);
     });
   }
