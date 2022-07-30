@@ -333,8 +333,6 @@ model GlobalMetrics {
   totalExchanges                  Int?
   ethDominance                    Float?
   btcDominance                    Float?
-  ethDominanceYesterday           Float?
-  btcDominanceYesterday           Float?
   ethDominance24hPercentageChange Float?
   btcDominance24hPercentageChange Float?
   defiVolume24h                   Float?
