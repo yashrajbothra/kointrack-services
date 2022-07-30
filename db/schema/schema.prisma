@@ -325,7 +325,7 @@ model CryptoExchange {
 }
 
 model GlobalMetrics {
-  id                              Int      @id @unique @default(autoincrement())
+  id                              Int    @id @unique @default(autoincrement())
   activeCryptocurrencies          Int?
   totalCryptocurrencies           Int?
   activeMarketPairs               Int?
@@ -348,9 +348,16 @@ model GlobalMetrics {
   derivativesVolume24h            Float?
   derivativesVolume24hReported    Float?
   derivatives24hPercentageChange  Float?
-  timestamp                       DateTime @unique @db.Timestamptz()
-  createdAt                       DateTime @default(now())
-  updatedAt                       DateTime @updatedAt
+  totalMarketCap                  Float?
+  totalVolume24h                  Float?
+  totalVolume24hReported          Float?
+  altcoinVolume24h                Float?
+  altcoinVolume24hReported        Float?
+  altcoinMarketCap                Float?
+
+  timestamp DateTime @unique @db.Timestamptz()
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("global_metrics")
 }
