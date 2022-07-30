@@ -9,10 +9,6 @@ datasource db {
   referentialIntegrity = "foreignKeys"
 }
 
-generator erd {
-  provider = "prisma-erd-generator"
-}
-
 model User {
   id               Int      @id @default(autoincrement())
   firstName        String?  @db.VarChar(250)
@@ -82,7 +78,6 @@ model Cryptocurrency {
 
   MarketData     MarketData[]
   OHLCV          OHLCV[]
-  Urls           Urls[]
   CryptoExchange CryptoExchange[]
 
   @@map("cryptocurrency")
@@ -145,8 +140,6 @@ model Urls {
   fee                    String[]
   CryptocurrencyMetadata CryptocurrencyMetadata[]
   ExchangeMetadata       ExchangeMetadata[]
-  Cryptocurrency         Cryptocurrency?          @relation(fields: [cryptocurrencyId], references: [id])
-  cryptocurrencyId       Int?
 
   @@map("urls")
 }
@@ -194,18 +187,16 @@ model TagsGroup {
 }
 
 model OHLCV {
-  id             Int            @id @default(autoincrement())
-  cryptocurrency Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
-  openPrice      Float
-  highPrice      Float
-  lowPrice       Float
-  closePrice     Float
-  tradedVolume   Int
-  createdAt      DateTime       @db.Timestamptz()
+  id           Int      @id @default(autoincrement())
+  openPrice    Float
+  highPrice    Float
+  lowPrice     Float
+  closePrice   Float
+  tradedVolume Int
+  createdAt    DateTime @db.Timestamptz()
 
+  cryptocurrency   Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
   cryptocurrencyId Int
-  Exchange         Exchange? @relation(fields: [exchangeId], references: [id])
-  exchangeId       Int?
 
   @@map("ohlcv")
 }
@@ -260,7 +251,6 @@ model Exchange {
   updatedAt DateTime @updatedAt
 
   MarketData       MarketData[]
-  OHLCV            OHLCV[]
   ExchangeMetadata ExchangeMetadata[]
   CryptoExchange   CryptoExchange[]
   ExchangeFee      ExchangeFee[]
@@ -285,10 +275,7 @@ model ExchangeMetadata {
   logoUrl             String   @db.Text
   description         String   @db.Text
   notice              String
-  countries           String[]
-  fiats               String[]
   rank                Int
-  coins               Int
   marketPairs         String   @db.VarChar(100)
   markets             Int
   firstHistoricalData DateTime @db.Timestamptz()
@@ -307,12 +294,11 @@ model ExchangeMetadata {
 }
 
 model ExchangeFee {
-  id                 Int               @unique @default(autoincrement())
+  exchangeId         Int               @id @unique
   feeType            String            @db.VarChar(256)
   makerFee           Float
   takerFee           Float
   Exchange           Exchange?         @relation(fields: [exchangeId], references: [id])
-  exchangeId         Int?
   ExchangeMetadata   ExchangeMetadata? @relation(fields: [exchangeMetadataId], references: [exchangeMetaId])
   exchangeMetadataId Int?
 

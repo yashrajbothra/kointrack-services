@@ -15,10 +15,8 @@ module.exports = {
         btcDominance: apiData.btc_dominance,
         ethDominanceYesterday: apiData.eth_dominance_yesterday,
         btcDominanceYesterday: apiData.btc_dominance_yesterday,
-        ethDominance24hPercentageChange:
-          apiData.eth_dominance_24h_percentage_change,
-        btcDominance24hPercentageChange:
-          apiData.btc_dominance_24h_percentage_change,
+        ethDominance24hPercentageChange: apiData.eth_dominance_24h_percentage_change,
+        btcDominance24hPercentageChange: apiData.btc_dominance_24h_percentage_change,
         defiVolume24h: apiData.defi_volume_24h,
         defiVolume24hReported: apiData.defi_volume_24h_reported,
         defi24hPercentageChange: apiData.defi_24h_percentage_change,
@@ -29,14 +27,14 @@ module.exports = {
         stablecoin24hPercentageChange: apiData.stablecoin_24h_percentage_change,
         derivativesVolume24h: apiData.derivatives_volume_24h,
         derivativesVolume24hReported: apiData.derivatives_volume_24h_reported,
-        derivatives24hPercentageChange:
-          apiData.derivatives_24h_percentage_change,
+        derivatives24hPercentageChange: apiData.derivatives_24h_percentage_change,
         timestamp: apiData.last_updated,
       };
     },
     queryType: 'upsert',
     upsertOn: (apiData) => ({ timestamp: apiData.last_updated }),
   },
+
   '/v2/cryptocurrency/info': {
     params(params) {
       return params;
@@ -49,8 +47,7 @@ module.exports = {
           logoUrl: apiData.logo,
           description: apiData.description,
           notice: apiData.notice,
-          selfReportedCirculatingSupply:
-            apiData.self_reported_circulating_supply,
+          selfReportedCirculatingSupply: apiData.self_reported_circulating_supply,
           selfReportedMarketCap: apiData.self_reported_market_cap,
           selfReportedTags: apiData.self_reported_tags,
           dateAdded: apiData.date_added,
@@ -86,6 +83,7 @@ module.exports = {
     },
     queryType: 'create',
   },
+
   '/v1/cryptocurrency/listings/latest': {
     params(params) {
       return params;
