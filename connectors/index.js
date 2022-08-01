@@ -132,4 +132,83 @@ module.exports = {
     },
     queryType: 'create',
   },
+  '/v1/exchange/info': {
+    params(params) {
+      return params;
+    },
+    db: { name: 'exchange' },
+    query(apiData) {
+      return {
+        data: {
+          name: apiData.name,
+          slug: apiData.slug,
+          ExchangeMetadata: {
+            create: {
+              logoUrl: apiData.logo,
+              description: apiData.description,
+              dateLaunched: apiData.date_launched,
+              notice: apiData.notice,
+              countries: apiData.countries,
+              fiats: apiData.fiats,
+              weeklyVisits: apiData.weekly_visits,
+            },
+          },
+          Cryptocurrency: {
+            Urls: {
+              create: {
+                website: apiData.urls.website,
+                blog: apiData.urls.blog,
+                chat: apiData.urls.chat,
+                fee: apiData.urls.fee,
+                twitter: apiData.urls.twitter,
+              },
+            },
+          },
+          ExchangeFee: {
+            makerFee: apiData.maker_fee,
+            takerFee: apiData.taker_fee,
+          },
+        },
+      };
+    },
+    queryType: 'create',
+  },
+  '/v1/exchange/market-pairs/latest': {
+    params(params) {
+      return params;
+    },
+    db: { name: 'exchange' },
+    query(apiData) {
+      return {
+        data: {
+          name: apiData.name,
+          slug: apiData.slug,
+          MarketData: {
+            create: {
+              numMarketpair: apiData.num_market_pairs,
+            },
+          },
+          Cryptocurrency: {
+            create: {
+              symbol: apiData.market_pairs.market_pair_base.currency_symbol,
+            },
+          },
+          ExchangeMetadata: {
+            create: {
+              marketPairs: apiData.market_pairs.market_pair,
+            },
+            ExchnageCategory: {
+              create: { category: apiData.market_pairs.category },
+              ExchangeFee: {
+                create: {
+                  feeType: apiData.market_pairs.fee_type,
+                },
+              },
+            },
+          },
+        },
+      };
+    },
+    queryType: 'create',
+  },
 };
