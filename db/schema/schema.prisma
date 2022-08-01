@@ -67,7 +67,7 @@ model Cryptocurrency {
   provider               Provider                @relation(fields: [providerId], references: [id])
   resourceId             Int
   name                   String                  @db.VarChar(256)
-  symbol                 String                  @db.VarChar(20)
+  symbol                 String                  @db.VarChar(80)
   slug                   String                  @unique() @db.VarChar(120)
   // Valid Values "active", "inactive", "untracked"
   status                 String                  @default("active") @db.Char(10)
@@ -360,4 +360,6 @@ model Provider {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   Cryptocurrency Cryptocurrency[]
+
+  @@map("provider")
 }

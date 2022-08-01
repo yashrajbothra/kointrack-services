@@ -1,3 +1,4 @@
+const Promise = require('bluebird');
 const prisma = require('../db');
 const instance = require('../axios/instance');
 const connectors = require('../connectors');
@@ -11,14 +12,21 @@ const addService = async (url, isMultiple, params = {}) => {
     });
 
   let postedData;
+
+  const upsertPromise = async (serviceData) => {
+    await prisma[mapping.db.name][mapping.queryType](
+      mapping.query(serviceData[0]),
+    ).then((res) => {
+      logger.info(JSON.stringify(res));
+      serviceData.shift();
+      upsertPromise(serviceData);
+    });
+  };
+
   switch (mapping.queryType) {
     case 'upsert':
       if (isMultiple) {
-        postedData = addServiceData.map(
-          async (serviceData) => prisma[mapping.db.name][mapping.queryType](
-            mapping.query(serviceData),
-          ),
-        );
+        await upsertPromise(addServiceData);
       } else {
         postedData = [await prisma[mapping.db.name][mapping.queryType](
           mapping.query(addServiceData),
@@ -30,10 +38,6 @@ const addService = async (url, isMultiple, params = {}) => {
       postedData = await prisma[mapping.db.name].create(mapping.query(addServiceData));
       break;
   }
-
-  Promise.all(postedData).then((values) => {
-    logger.info(JSON.stringify(values));
-  });
 };
 
 module.exports = { addService };

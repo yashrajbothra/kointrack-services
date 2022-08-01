@@ -54,7 +54,6 @@ module.exports = {
       if (apiData.platform !== null) {
         platformData = {
           create: {
-            cryptoId: apiData.id,
             parentCryptoId: apiData.platform.id,
             tokenAddress: apiData.platform.token_address,
           },
@@ -151,7 +150,6 @@ module.exports = {
     params(params) {
       return params;
     },
-
     db: { name: 'cryptocurrency' },
     query(apiData) {
       return {
