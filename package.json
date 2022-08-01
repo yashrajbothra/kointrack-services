@@ -11,6 +11,7 @@
     "prepare": "husky install",
     "db:push": "npx prisma db push",
     "db:pull": "npx prisma db pull",
+    "seed": "node db/seed.js",
     "test": "set NODE_ENV=test && jest",
     "docs": "jsdoc -c jsdoc.json"
   },
@@ -30,7 +31,7 @@
     "winston-daily-rotate-file": "^4.7.1"
   },
   "prisma": {
-    "seed": "node prisma/seed.js",
+    "seed": "node db/seed.js",
     "schema": "./db/schema/schema.prisma"
   },
   "devDependencies": {

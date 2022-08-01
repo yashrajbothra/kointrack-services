@@ -1,3 +1,5 @@
+const slugify = require('slugify');
+
 module.exports = {
   '/v1/global-metrics/quotes/latest': {
     params() {},
@@ -42,6 +44,52 @@ module.exports = {
     queryType: 'upsert',
   },
 
+  '/v1/cryptocurrency/map': {
+    params(params) {
+      return params;
+    },
+    db: { name: 'cryptocurrency' },
+    query(apiData) {
+      let platformData;
+      if (apiData.platform !== null) {
+        platformData = {
+          create: {
+            cryptoId: apiData.id,
+            parentCryptoId: apiData.platform.id,
+            tokenAddress: apiData.platform.token_address,
+          },
+        };
+      }
+
+      return {
+        where: {
+          slug: apiData.slug,
+        },
+        update: {},
+        create: {
+          provider: {
+            connect: {
+              id: 1,
+            },
+          },
+          resourceId: apiData.id,
+          name: apiData.name,
+          symbol: apiData.symbol,
+          slug: apiData.slug,
+          isActive: Boolean(apiData.is_active),
+          firstHistoricalData: apiData.first_historical_data,
+          MarketData: {
+            create: {
+              rank: apiData.rank,
+            },
+          },
+          platform: platformData,
+        },
+      };
+    },
+    queryType: 'upsert',
+  },
+
   '/v2/cryptocurrency/info': {
     params(params) {
       return params;
@@ -50,7 +98,17 @@ module.exports = {
     query(apiData) {
       return {
         data: {
-          category: apiData.category,
+          category: {
+            connectOrCreate: {
+              where: {
+                name: apiData.category,
+              },
+              create: {
+                name: apiData.category,
+                slug: slugify(apiData.category, '-'),
+              },
+            },
+          },
           logoUrl: apiData.logo,
           description: apiData.description,
           notice: apiData.notice,
@@ -59,19 +117,12 @@ module.exports = {
           selfReportedTags: apiData.self_reported_tags,
           dateAdded: apiData.date_added,
           dateLaunched: apiData.date_launched,
-          Cryptocurrency: {
-            create: {
-              name: apiData.name,
-              slug: apiData.slug,
-              symbol: apiData.symbol,
-              Platform: {
-                create: {
-                  tokenAddress: apiData.token_address,
-                },
-              },
+          cryptocurrency: {
+            connect: {
+              resourceId: apiData.id,
             },
           },
-          Urls: {
+          urls: {
             create: {
               website: apiData.urls.website,
               technicalDocumentation: apiData.urls.technical_documentation,
@@ -84,7 +135,12 @@ module.exports = {
               twitter: apiData.urls.twitter,
             },
           },
-          Tags: { create: { name: apiData.name } },
+          tags: apiData.tags.map((tag) => ({
+            create: { name: tag },
+            where: {
+              name: tag,
+            },
+          })),
         },
       };
     },

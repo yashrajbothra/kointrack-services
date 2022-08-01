@@ -64,15 +64,18 @@ model Otp {
 
 model Cryptocurrency {
   id                     Int                     @id @unique() @default(autoincrement())
+  provider               Provider                @relation(fields: [providerId], references: [id])
+  resourceId             Int
   name                   String                  @db.VarChar(256)
   symbol                 String                  @db.VarChar(20)
   slug                   String                  @unique() @db.VarChar(120)
   // Valid Values "active", "inactive", "untracked"
-  status                 String                  @db.Char(10)
+  status                 String                  @default("active") @db.Char(10)
   sign                   String?                 @db.VarChar(10)
   isActive               Boolean                 @default(true)
   cryptocurrencymetadata CryptocurrencyMetadata?
   platform               Platform?
+  firstHistoricalData    DateTime?
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
 
@@ -80,6 +83,7 @@ model Cryptocurrency {
   OHLCV          OHLCV[]
   CryptoExchange CryptoExchange[]
   Exchange       Exchange[]
+  providerId     Int
 
   @@map("cryptocurrency")
 }
@@ -100,20 +104,19 @@ model CryptocurrencyMetadata {
   description                   String                @db.Text
   category                      Category              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   urls                          Urls?                 @relation(fields: [urlsId], references: [id], onDelete: Cascade)
-  rank                          Int?
   notice                        String?
   selfReportedCirculatingSupply Float?
   selfReportedMarketCap         Float?
   selfReportedTags              String?
   contractAddress               BlockchainContracts[]
-  dateAdded                     DateTime              @db.Timestamptz()
+  tags                          Tags[]                @relation("TagsInMetadata")
+  dateAdded                     DateTime?             @db.Timestamptz()
   dateLaunched                  DateTime              @db.Timestamptz()
   createdAt                     DateTime              @default(now())
   updatedAt                     DateTime              @updatedAt
 
-  categoryId                    Int
-  urlsId                        Int
-  TagsOnCryptocurrencyMetadatas TagsOnCryptocurrencyMetadatas[]
+  categoryId Int
+  urlsId     Int
 
   @@map("cryptocurrency_metadata")
 }
@@ -165,22 +168,10 @@ model Tags {
   slug      String    @unique
   tagsGroup TagsGroup @relation(fields: [tagsGroupId], references: [id])
 
-  TagsOnCryptocurrencyMetadatas TagsOnCryptocurrencyMetadatas[]
-  tagsGroupId                   Int
+  tagsGroupId            Int
+  CryptocurrencyMetadata CryptocurrencyMetadata[] @relation("TagsInMetadata")
 
   @@map("tags")
-}
-
-model TagsOnCryptocurrencyMetadatas {
-  tags                     Tags                   @relation(fields: [tagsId], references: [id])
-  tagsId                   Int
-  cryptocurrenyMetadatas   CryptocurrencyMetadata @relation(fields: [cryptocurrencyMetadataId], references: [cryptoId])
-  cryptocurrencyMetadataId Int
-  assignedAt               DateTime               @default(now())
-  assignedBy               String
-
-  @@id([tagsId, cryptocurrencyMetadataId])
-  @@map("tags_on_cryptocurrency_metadata")
 }
 
 model TagsGroup {
@@ -279,18 +270,18 @@ model ExchangeCategory {
 }
 
 model ExchangeMetadata {
-  exchangeMetaId      Int      @id @unique
-  Exchange            Exchange @relation(fields: [exchangeMetaId], references: [id])
-  logoUrl             String   @db.Text
-  description         String   @db.Text
-  notice              String
-  rank                Int
-  marketPairs         String   @db.VarChar(100)
-  markets             Int
-  firstHistoricalData DateTime @db.Timestamptz()
-  lastHistoricalData  DateTime @db.Timestamptz()
+  exchangeMetaId      Int       @id @unique
+  Exchange            Exchange  @relation(fields: [exchangeMetaId], references: [id])
+  logoUrl             String    @db.Text
+  description         String    @db.Text
+  notice              String?
+  rank                Int?
+  marketPairs         String?   @db.VarChar(100)
+  markets             Int?
+  firstHistoricalData DateTime? @db.Timestamptz()
+  lastHistoricalData  DateTime? @db.Timestamptz()
   weeklyVisits        Int
-  dateLaunched        DateTime @db.Timestamptz()
+  dateLaunched        DateTime  @db.Timestamptz()
 
   Urls Urls @relation(fields: [UrlsId], references: [id])
 
@@ -358,4 +349,15 @@ model GlobalMetrics {
   updatedAt DateTime @updatedAt
 
   @@map("global_metrics")
+}
+
+model Provider {
+  id       Int     @id @unique @default(autoincrement())
+  name     String
+  baseUrl  String
+  isActive Boolean @default(true)
+
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  Cryptocurrency Cryptocurrency[]
 }
