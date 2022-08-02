@@ -66,6 +66,7 @@ model Cryptocurrency {
   id                     Int                     @id @unique() @default(autoincrement())
   provider               Provider                @relation(fields: [providerId], references: [id])
   resourceId             Int
+  resourceIdSlug         String                  @unique
   name                   String                  @db.VarChar(256)
   symbol                 String                  @db.VarChar(80)
   slug                   String                  @unique() @db.VarChar(120)
@@ -74,25 +75,26 @@ model Cryptocurrency {
   sign                   String?                 @db.VarChar(10)
   isActive               Boolean                 @default(true)
   cryptocurrencymetadata CryptocurrencyMetadata?
-  platform               Platform?
+  platform               Platform?               @relation(fields: [platformId], references: [parentCryptoId])
   firstHistoricalData    DateTime?
-  createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @updatedAt
+  tokenAddress           String?                 @db.VarChar(256)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   MarketData     MarketData[]
   OHLCV          OHLCV[]
   CryptoExchange CryptoExchange[]
   Exchange       Exchange[]
   providerId     Int
+  platformId     Int?
 
   @@map("cryptocurrency")
 }
 
 model Platform {
-  cryptoId       Int            @id @unique()
-  parentCryptoId Int
-  tokenAddress   String         @db.VarChar(256)
-  cryptocurrency Cryptocurrency @relation(fields: [cryptoId], references: [id], onDelete: Cascade)
+  parentCryptoId Int              @id @unique
+  Cryptocurrency Cryptocurrency[]
 
   @@map("platform")
 }
@@ -164,7 +166,7 @@ model Category {
 
 model Tags {
   id        Int       @id @unique @default(autoincrement())
-  name      String    @unique
+  name      String
   slug      String    @unique
   tagsGroup TagsGroup @relation(fields: [tagsGroupId], references: [id])
 
@@ -316,33 +318,37 @@ model CryptoExchange {
 }
 
 model GlobalMetrics {
-  id                              Int    @id @unique @default(autoincrement())
-  activeCryptocurrencies          Int?
-  totalCryptocurrencies           Int?
-  activeMarketPairs               Int?
-  activeExchanges                 Int?
-  totalExchanges                  Int?
-  ethDominance                    Float?
-  btcDominance                    Float?
-  ethDominance24hPercentageChange Float?
-  btcDominance24hPercentageChange Float?
-  defiVolume24h                   Float?
-  defiVolume24hReported           Float?
-  defi24hPercentageChange         Float?
-  defiMarketCap                   Float?
-  stablecoinVolume24h             Float?
-  stablecoinVolume24hReported     Float?
-  stablecoinMarketCap             Float?
-  stablecoin24hPercentageChange   Float?
-  derivativesVolume24h            Float?
-  derivativesVolume24hReported    Float?
-  derivatives24hPercentageChange  Float?
-  totalMarketCap                  Float?
-  totalVolume24h                  Float?
-  totalVolume24hReported          Float?
-  altcoinVolume24h                Float?
-  altcoinVolume24hReported        Float?
-  altcoinMarketCap                Float?
+  id                                      Int    @id @unique @default(autoincrement())
+  activeCryptocurrencies                  Int?
+  totalCryptocurrencies                   Int?
+  activeMarketPairs                       Int?
+  activeExchanges                         Int?
+  totalExchanges                          Int?
+  ethDominance                            Float?
+  btcDominance                            Float?
+  ethDominance24hPercentageChange         Float?
+  btcDominance24hPercentageChange         Float?
+  defiVolume24h                           Float?
+  defiVolume24hReported                   Float?
+  defi24hPercentageChange                 Float?
+  defiMarketCap                           Float?
+  stablecoinVolume24h                     Float?
+  stablecoinVolume24hReported             Float?
+  stablecoinMarketCap                     Float?
+  stablecoin24hPercentageChange           Float?
+  derivativesVolume24h                    Float?
+  derivativesVolume24hReported            Float?
+  derivatives24hPercentageChange          Float?
+  totalMarketCap                          Float?
+  totalMarketCapYesterday                 Float?
+  totalMarketCapYesterdayPercentageChange Float?
+  totalVolume24h                          Float?
+  totalVolume24hReported                  Float?
+  totalVolume24hYesterday                 Float?
+  totalVolume24hYesterdayPercentageChange Float?
+  altcoinVolume24h                        Float?
+  altcoinVolume24hReported                Float?
+  altcoinMarketCap                        Float?
 
   timestamp DateTime @unique @db.Timestamptz()
   createdAt DateTime @default(now())
@@ -353,7 +359,8 @@ model GlobalMetrics {
 
 model Provider {
   id       Int     @id @unique @default(autoincrement())
-  name     String
+  name     String  @unique
+  slug     String  @unique
   baseUrl  String
   isActive Boolean @default(true)
 

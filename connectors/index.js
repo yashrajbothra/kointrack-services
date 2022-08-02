@@ -1,4 +1,5 @@
-const slugify = require('slugify');
+const prisma = require('../db');
+const slugger = require('../utils/slugger');
 
 module.exports = {
   '/v1/global-metrics/quotes/latest': {
@@ -31,7 +32,13 @@ module.exports = {
           derivativesVolume24hReported: apiData.derivatives_volume_24h_reported,
           derivatives24hPercentageChange: apiData.derivatives_24h_percentage_change,
           totalMarketCap: apiData.quote.USD.total_market_cap,
+          totalMarketCapYesterday: apiData.quote.USD.total_market_cap_yesterday,
+          totalMarketCapYesterdayPercentageChange: apiData
+            .quote.USD.total_market_cap_yesterday_percentageChange,
           totalVolume24h: apiData.quote.USD.total_volume_24h,
+          totalVolume24hYesterday: apiData.quote.USD.total_volume_24h_yesterday,
+          totalVolume24hYesterdayPercentageChange: apiData
+            .quote.USD.total_volume_24h_yesterday_percentage_change,
           totalVolume24hReported: apiData.quote.USD.total_volume_24h_reported,
           altcoinVolume24h: apiData.quote.USD.altcoin_volume_24h,
           altcoinVolume24hReported: apiData.quote.USD.altcoin_volume_24h_reported,
@@ -51,12 +58,17 @@ module.exports = {
     db: { name: 'cryptocurrency' },
     query(apiData) {
       let platformData;
-      if (apiData.platform !== null) {
+      if (apiData.platform?.id) {
         platformData = {
+          connectOrCreate:
+        {
+          where: {
+            parentCryptoId: apiData.platform.id,
+          },
           create: {
             parentCryptoId: apiData.platform.id,
-            tokenAddress: apiData.platform.token_address,
           },
+        },
         };
       }
 
@@ -72,11 +84,13 @@ module.exports = {
             },
           },
           resourceId: apiData.id,
+          resourceIdSlug: slugger(`coinmarketcap ${apiData.id}`),
           name: apiData.name,
           symbol: apiData.symbol,
           slug: apiData.slug,
           isActive: Boolean(apiData.is_active),
           firstHistoricalData: apiData.first_historical_data,
+          tokenAddress: apiData.platform?.token_address,
           MarketData: {
             create: {
               rank: apiData.rank,
@@ -95,6 +109,29 @@ module.exports = {
     },
     db: { name: 'cryptocurrencyMetadata' },
     query(apiData) {
+      const tagsData = [];
+      apiData.tags?.forEach(async (tag, i) => {
+        tagsData.push(await prisma.tags.upsert({
+          create: {
+            name: apiData['tag-names'][i],
+            tagsGroup: {
+              connectOrCreate: {
+                create: {
+                  name: apiData['tag-groups'][i],
+                },
+                where: {
+                  name: apiData['tag-groups'][i],
+                },
+              },
+            },
+            slug: tag,
+          },
+          where: {
+            slug: tag,
+          },
+        }));
+      });
+
       return {
         data: {
           category: {
@@ -104,7 +141,7 @@ module.exports = {
               },
               create: {
                 name: apiData.category,
-                slug: slugify(apiData.category, '-'),
+                slug: slugger(apiData.category, '_'),
               },
             },
           },
@@ -118,7 +155,7 @@ module.exports = {
           dateLaunched: apiData.date_launched,
           cryptocurrency: {
             connect: {
-              resourceId: apiData.id,
+              resourceIdSlug: `coinmarketcap ${apiData.id}`,
             },
           },
           urls: {
@@ -134,12 +171,9 @@ module.exports = {
               twitter: apiData.urls.twitter,
             },
           },
-          tags: apiData.tags.map((tag) => ({
-            create: { name: tag },
-            where: {
-              name: tag,
-            },
-          })),
+          tags: {
+            connect: { tagsData },
+          },
         },
       };
     },
