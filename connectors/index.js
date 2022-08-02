@@ -34,7 +34,7 @@ module.exports = {
           totalMarketCap: apiData.quote.USD.total_market_cap,
           totalMarketCapYesterday: apiData.quote.USD.total_market_cap_yesterday,
           totalMarketCapYesterdayPercentageChange: apiData
-            .quote.USD.total_market_cap_yesterday_percentageChange,
+            .quote.USD.total_market_cap_yesterday_percentage_change,
           totalVolume24h: apiData.quote.USD.total_volume_24h,
           totalVolume24hYesterday: apiData.quote.USD.total_volume_24h_yesterday,
           totalVolume24hYesterdayPercentageChange: apiData
