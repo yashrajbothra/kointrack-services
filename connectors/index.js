@@ -91,11 +91,7 @@ module.exports = {
           isActive: Boolean(apiData.is_active),
           firstHistoricalData: apiData.first_historical_data,
           tokenAddress: apiData.platform?.token_address,
-          MarketData: {
-            create: {
-              rank: apiData.rank,
-            },
-          },
+          rank: apiData.rank,
           platform: platformData,
         },
       };
@@ -129,6 +125,7 @@ module.exports = {
           where: {
             slug: tag,
           },
+          update: {},
         }));
       });
 
@@ -150,12 +147,12 @@ module.exports = {
           notice: apiData.notice,
           selfReportedCirculatingSupply: apiData.self_reported_circulating_supply,
           selfReportedMarketCap: apiData.self_reported_market_cap,
-          selfReportedTags: apiData.self_reported_tags,
+          // selfReportedTags: apiData.self_reported_tags,
           dateAdded: apiData.date_added,
           dateLaunched: apiData.date_launched,
           cryptocurrency: {
             connect: {
-              resourceIdSlug: `coinmarketcap ${apiData.id}`,
+              resourceIdSlug: slugger(`coinmarketcap ${apiData.id}`),
             },
           },
           urls: {
@@ -171,9 +168,9 @@ module.exports = {
               twitter: apiData.urls.twitter,
             },
           },
-          tags: {
-            connect: { tagsData },
-          },
+          // tags: {
+          //   connect: { tagsData },
+          // },
         },
       };
     },

@@ -73,6 +73,7 @@ model Cryptocurrency {
   // Valid Values "active", "inactive", "untracked"
   status                 String                  @default("active") @db.Char(10)
   sign                   String?                 @db.VarChar(10)
+  rank                   Int?
   isActive               Boolean                 @default(true)
   cryptocurrencymetadata CryptocurrencyMetadata?
   platform               Platform?               @relation(fields: [platformId], references: [parentCryptoId])
@@ -205,7 +206,6 @@ model OHLCV {
 model MarketData {
   id                Int            @id @unique @default(autoincrement())
   cryptocurrency    Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
-  rank              Int?
   numMarketPair     Int?
   circulatingSupply Float?
   totalSupply       Float?
