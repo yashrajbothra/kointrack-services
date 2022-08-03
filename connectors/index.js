@@ -1,5 +1,6 @@
 const prisma = require('../db');
 const slugger = require('../utils/slugger');
+const deleteObjPair = require('../utils/deleteObjPair');
 
 module.exports = {
   '/v1/global-metrics/quotes/latest': {
@@ -104,10 +105,9 @@ module.exports = {
       return params;
     },
     db: { name: 'cryptocurrencyMetadata' },
-    query(apiData) {
-      const tagsData = [];
-      apiData.tags?.forEach(async (tag, i) => {
-        tagsData.push(await prisma.tags.upsert({
+    query: async (apiData) => {
+      let tagsPromises = apiData.tags?.map(async (tag, i) => {
+        const tagsData = await prisma.tags.upsert({
           create: {
             name: apiData['tag-names'][i],
             tagsGroup: {
@@ -126,8 +126,12 @@ module.exports = {
             slug: tag,
           },
           update: {},
-        }));
+        });
+        return tagsData;
       });
+      if (tagsPromises === undefined) tagsPromises = [];
+      let tagsData = await Promise.all(tagsPromises);
+      tagsData = tagsData.map((tags) => deleteObjPair(tags, ['name', 'slug', 'tagsGroupId']));
 
       return {
         data: {
@@ -168,9 +172,9 @@ module.exports = {
               twitter: apiData.urls.twitter,
             },
           },
-          // tags: {
-          //   connect: { tagsData },
-          // },
+          tags: {
+            connect: tagsData,
+          },
         },
       };
     },

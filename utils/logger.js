@@ -21,7 +21,7 @@ const logger = winston.createLogger({
   transports: [
     new winston.transports.Console({
       stderrLevels: ['error'],
-      format: winston.format.colorize({ all: true }),
+      format: winston.format.colorize({ all: false }),
     }),
     new WinstonDailyRotateFile({
       filename: './logs/%DATE%.log',

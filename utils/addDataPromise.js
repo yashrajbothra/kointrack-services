@@ -6,17 +6,16 @@ const addDataPromise = async (mapping, serviceData) => {
 
   if (serviceData.length <= 0) return logger.info(JSON.stringify(postedData));
   await prisma[mapping.db.name][mapping.queryType](
-    mapping.query(serviceData[0]),
+    await mapping.query(serviceData[0]),
   ).then((res) => {
     postedData.push(res);
     serviceData.shift();
     addDataPromise(mapping, serviceData);
-  }).catch((res) => {
-    logger.info(JSON.stringify(postedData));
-    logger.error(res);
+  }, (err) => {
+    logger.error(err);
   });
 
-  return postedData;
+  logger.info(JSON.stringify(postedData));
 };
 
 module.exports = addDataPromise;

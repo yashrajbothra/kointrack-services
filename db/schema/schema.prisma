@@ -108,13 +108,13 @@ model CryptocurrencyMetadata {
   category                      Category              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   urls                          Urls?                 @relation(fields: [urlsId], references: [id], onDelete: Cascade)
   notice                        String?
-  selfReportedCirculatingSupply Float?
+  selfReportedCirculatingSupply Decimal?              @db.Decimal(21, 18)
   selfReportedMarketCap         Float?
   selfReportedTags              String?
   contractAddress               BlockchainContracts[]
   tags                          Tags[]                @relation("TagsInMetadata")
-  dateAdded                     DateTime?             @db.Timestamptz()
-  dateLaunched                  DateTime              @db.Timestamptz()
+  dateAdded                     DateTime              @db.Timestamptz()
+  dateLaunched                  DateTime?             @db.Timestamptz()
   createdAt                     DateTime              @default(now())
   updatedAt                     DateTime              @updatedAt
 

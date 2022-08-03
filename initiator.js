@@ -59,10 +59,10 @@ for (const batch in allBatches) {
     currBatch.forEach(async (job) => {
       if (!job.params) job.params = async () => {};
       if (!job.serviceName) job.serviceName = 'addService';
-      service[job.serviceName](job.url, job.isMultiple, await job.params());
-      setInterval(async () => {
-        service[job.serviceName](job.url, job.isMultiple, await job.params());
-      }, job.interval);
+      await service[job.serviceName](job.url, job.isMultiple, await job.params());
+      // setInterval(async () => {
+      //   service[job.serviceName](job.url, job.isMultiple, await job.params());
+      // }, job.interval);
     });
   }
 }

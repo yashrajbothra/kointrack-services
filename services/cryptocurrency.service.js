@@ -1,3 +1,4 @@
+/* eslint-disable no-promise-executor-return */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 /* eslint-disable no-const-assign */
@@ -9,26 +10,30 @@ const connectors = require('../connectors');
 const logger = require('../utils/logger');
 const addDataPromise = require('../utils/addDataPromise');
 
+const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+const interval = 3000;
+
 const addCryptocurrencyMetadata = async (url, isMultiple, params = {}) => {
+  if (params.length <= 0) return;
   const mapping = connectors[url];
-  const chunkSize = params.length;
+  delay(interval).then(async () => {
+    const tempParams = params.shift();
+    const addServiceData = await instance.get(
+      url,
+      { params: mapping.params({ ...tempParams }) },
+    ).then((res) => {
+      addCryptocurrencyMetadata(url, isMultiple, params);
+      return res.data.data;
+    }).catch((err) => {
+      logger.error(err);
+    });
 
-  for (let chunk = 0; chunk < chunkSize; chunk += 1) {
-    (async () => {
-      const addServiceData = await instance.get(
-        url,
-        { params: mapping.params({ ...params[chunk] }) },
-      ).then((res) => res.data.data).catch((err) => {
-        logger.error(err);
-      });
-
-      const allServiceData = [];
-      Object.values(addServiceData).forEach(async (serviceData) => {
-        allServiceData.push(serviceData);
-      });
-      await addDataPromise(mapping, allServiceData);
-    })();
-  }
+    const allServiceData = [];
+    Object.values(addServiceData).forEach(async (serviceData) => {
+      allServiceData.push(serviceData);
+    });
+    await addDataPromise(mapping, allServiceData);
+  });
 };
 
 module.exports = addCryptocurrencyMetadata;

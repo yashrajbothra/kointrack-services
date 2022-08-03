@@ -1,0 +1,8 @@
+[
+  {
+    "/v1/global-metrics/quotes/latest": {
+      "params": [],
+      "db": {}
+    }
+  }
+]
