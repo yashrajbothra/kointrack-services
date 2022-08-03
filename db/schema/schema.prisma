@@ -67,9 +67,9 @@ model Cryptocurrency {
   provider               Provider                @relation(fields: [providerId], references: [id])
   resourceId             Int
   resourceIdSlug         String                  @unique
-  name                   String                  @db.VarChar(256)
+  name                   String                  @db.VarChar(120)
   symbol                 String                  @db.VarChar(80)
-  slug                   String                  @unique() @db.VarChar(120)
+  slug                   String                  @unique() @db.VarChar(256)
   // Valid Values "active", "inactive", "untracked"
   status                 String                  @default("active") @db.Char(10)
   sign                   String?                 @db.VarChar(10)
@@ -107,9 +107,9 @@ model CryptocurrencyMetadata {
   description                   String                @db.Text
   category                      Category              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   urls                          Urls?                 @relation(fields: [urlsId], references: [id], onDelete: Cascade)
-  notice                        String?
-  selfReportedCirculatingSupply Decimal?              @db.Decimal(21, 18)
-  selfReportedMarketCap         Float?
+  notice                        String?               @db.Text
+  selfReportedCirculatingSupply Decimal?              @db.Decimal()
+  selfReportedMarketCap         Decimal?              @db.Decimal()
   selfReportedTags              String?
   contractAddress               BlockchainContracts[]
   tags                          Tags[]                @relation("TagsInMetadata")

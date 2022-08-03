@@ -37,16 +37,19 @@ const allBatches = {
           },
         });
 
-        let paramsStr = '';
+        let paramsArr = [];
         const params = [];
         resources.forEach((resource, i) => {
           // 100-700 call capacity
-          if ((i + 1) % 500 === 0) {
-            paramsStr += `${resource.resourceId}`;
-            params.push({ id: paramsStr });
-            paramsStr = '';
-          } else paramsStr += `${resource.resourceId},`;
+          if ((i + 1) % 100 === 0) {
+            paramsArr.push(resource.resourceId);
+            params.push({ id: paramsArr.join(',') });
+            paramsArr = [];
+          } else {
+            paramsArr.push(resource.resourceId);
+          }
         });
+        params.push({ id: paramsArr.join(',') });
         return params;
       },
     },
