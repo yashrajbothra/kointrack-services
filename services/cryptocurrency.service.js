@@ -25,6 +25,7 @@ const addCryptocurrencyMetadata = async (url, isMultiple, params = {}) => {
       addCryptocurrencyMetadata(url, isMultiple, params);
       return res.data.data;
     }).catch((err) => {
+      addCryptocurrencyMetadata(url, isMultiple, params);
       logger.error(err);
     });
 

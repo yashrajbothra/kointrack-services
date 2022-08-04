@@ -8,20 +8,17 @@ const batchName = args.pop();
 const allBatches = {
   'batch-1': [
     {
-      name: 'globalMetricsLatest',
+      name: 'Global Metrics Latest',
       url: '/v1/global-metrics/quotes/latest',
       interval: '600000',
-    },
-  ],
-  'batch-2': [
-    {
+    }, {
       name: 'Cryptocurrency',
       url: '/v1/cryptocurrency/map',
       interval: '600000',
       isMultiple: true,
     },
   ],
-  'batch-3': [
+  'batch-2': [
     {
       name: 'Cryptocurrency Metadata',
       url: '/v2/cryptocurrency/info',

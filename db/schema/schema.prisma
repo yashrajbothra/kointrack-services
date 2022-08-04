@@ -68,7 +68,7 @@ model Cryptocurrency {
   resourceId             Int
   resourceIdSlug         String                  @unique
   name                   String                  @db.VarChar(120)
-  symbol                 String                  @db.VarChar(80)
+  symbol                 String                  @unique @db.VarChar(80)
   slug                   String                  @unique() @db.VarChar(256)
   // Valid Values "active", "inactive", "untracked"
   status                 String                  @default("active") @db.Char(10)
@@ -111,6 +111,10 @@ model CryptocurrencyMetadata {
   selfReportedCirculatingSupply Decimal?              @db.Decimal()
   selfReportedMarketCap         Decimal?              @db.Decimal()
   selfReportedTags              String?
+  numMarketPair                 Int?
+  circulatingSupply             Decimal?              @db.Decimal()
+  totalSupply                   Decimal?              @db.Decimal()
+  maxSupply                     Decimal?              @db.Decimal()
   contractAddress               BlockchainContracts[]
   tags                          Tags[]                @relation("TagsInMetadata")
   dateAdded                     DateTime              @db.Timestamptz()
@@ -204,14 +208,9 @@ model OHLCV {
 }
 
 model MarketData {
-  id                Int            @id @unique @default(autoincrement())
-  cryptocurrency    Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
-  numMarketPair     Int?
-  circulatingSupply Float?
-  totalSupply       Float?
-  maxSupply         Float?
-  marketCap         Float?
-  updatedAt         DateTime       @updatedAt
+  id             Int            @id @unique @default(autoincrement())
+  cryptocurrency Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
+  updatedAt      DateTime       @updatedAt
 
   cryptocurrencyId Int
   Exchange         Exchange? @relation(fields: [exchangeId], references: [id], onDelete: NoAction)
