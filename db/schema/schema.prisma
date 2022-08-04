@@ -68,7 +68,7 @@ model Cryptocurrency {
   resourceId             Int
   resourceIdSlug         String                  @unique
   name                   String                  @db.VarChar(120)
-  symbol                 String                  @unique @db.VarChar(80)
+  symbol                 String                  @db.VarChar(80)
   slug                   String                  @unique() @db.VarChar(256)
   // Valid Values "active", "inactive", "untracked"
   status                 String                  @default("active") @db.Char(10)
