@@ -3,7 +3,7 @@ const instance = require('../axios/instance');
 const connectors = require('../connectors');
 const logger = require('../utils/logger');
 const addDataPromise = require('../utils/addDataPromise');
-const addCryptocurrencyMetadata = require('./cryptocurrency.service');
+const { addCryptocurrencyInfo, addCryptocurrencyLatest } = require('./cryptocurrency.service');
 
 const addService = async (url, isMultiple, params = {}) => {
   const mapping = connectors[url];
@@ -32,4 +32,4 @@ const addService = async (url, isMultiple, params = {}) => {
   }
 };
 
-module.exports = { addService, addCryptocurrencyMetadata };
+module.exports = { addService, addCryptocurrencyInfo, addCryptocurrencyLatest };

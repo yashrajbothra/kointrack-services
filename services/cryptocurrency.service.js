@@ -13,7 +13,7 @@ const addDataPromise = require('../utils/addDataPromise');
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 const interval = 3000;
 
-const addCryptocurrencyMetadata = async (url, isMultiple, params = {}) => {
+const addCryptocurrencyInfo = async (url, isMultiple, params = {}) => {
   if (params.length <= 0) return;
   const mapping = connectors[url];
   delay(interval).then(async () => {
@@ -22,10 +22,10 @@ const addCryptocurrencyMetadata = async (url, isMultiple, params = {}) => {
       url,
       { params: mapping.params({ ...tempParams }) },
     ).then((res) => {
-      addCryptocurrencyMetadata(url, isMultiple, params);
+      addCryptocurrencyInfo(url, isMultiple, params);
       return res.data.data;
     }).catch((err) => {
-      addCryptocurrencyMetadata(url, isMultiple, params);
+      addCryptocurrencyInfo(url, isMultiple, params);
       logger.error(err);
     });
 
@@ -37,4 +37,23 @@ const addCryptocurrencyMetadata = async (url, isMultiple, params = {}) => {
   });
 };
 
-module.exports = addCryptocurrencyMetadata;
+const addCryptocurrencyLatest = async (url, isMultiple, params = {}) => {
+  if (params.start % 5000 !== 0 && params.start !== 1) return;
+  const mapping = connectors[url];
+  const addServiceData = await instance.get(
+    url,
+    { params: await mapping.params({ ...params }) },
+  ).then((res) => {
+    addCryptocurrencyLatest(url, isMultiple, {
+      start: (
+        res.config.params.start + res.data.data.length
+      ) - 1,
+    });
+    return res.data.data;
+  }).catch((err) => {
+    logger.error(err);
+  });
+  await addDataPromise(mapping, addServiceData);
+};
+
+module.exports = { addCryptocurrencyInfo, addCryptocurrencyLatest };

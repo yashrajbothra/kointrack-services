@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 const prisma = require('./db');
 const service = require('./services');
+const logger = require('./utils/logger');
 
 const args = process.argv.slice(2);
 const batchName = args.pop();
@@ -23,7 +24,7 @@ const allBatches = {
       name: 'Cryptocurrency Metadata',
       url: '/v2/cryptocurrency/info',
       interval: '600000',
-      serviceName: 'addCryptocurrencyMetadata',
+      serviceName: 'addCryptocurrencyInfo',
       params: async () => {
         const resources = await prisma.cryptocurrency.findMany({
           select: {
@@ -51,6 +52,19 @@ const allBatches = {
       },
     },
   ],
+  'batch-3': [
+    {
+      name: 'Cryptocurrency Market Details',
+      url: '/v1/cryptocurrency/listings/latest',
+      interval: '600000',
+      serviceName: 'addCryptocurrencyLatest',
+      isMultiple: true,
+      params: async (start = 1) => ({
+        limit: 5000,
+        start,
+      }),
+    },
+  ],
 };
 
 for (const batch in allBatches) {
@@ -59,6 +73,8 @@ for (const batch in allBatches) {
     currBatch.forEach(async (job) => {
       if (!job.params) job.params = async () => {};
       if (!job.serviceName) job.serviceName = 'addService';
+
+      logger.info(`\n ${job.name} is started`);
       await service[job.serviceName](job.url, job.isMultiple, await job.params());
       // setInterval(async () => {
       //   service[job.serviceName](job.url, job.isMultiple, await job.params());

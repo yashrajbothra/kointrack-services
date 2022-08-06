@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 const prisma = require('../db');
 const logger = require('./logger');
 

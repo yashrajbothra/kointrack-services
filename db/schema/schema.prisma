@@ -66,7 +66,6 @@ model Cryptocurrency {
   id                     Int                     @id @unique() @default(autoincrement())
   provider               Provider                @relation(fields: [providerId], references: [id])
   resourceId             Int
-  resourceIdSlug         String                  @unique
   name                   String                  @db.VarChar(120)
   symbol                 String                  @db.VarChar(80)
   slug                   String                  @unique() @db.VarChar(256)
@@ -79,9 +78,8 @@ model Cryptocurrency {
   platform               Platform?               @relation(fields: [platformId], references: [parentCryptoId])
   firstHistoricalData    DateTime?
   tokenAddress           String?                 @db.VarChar(256)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
 
   MarketData     MarketData[]
   OHLCV          OHLCV[]
@@ -90,6 +88,7 @@ model Cryptocurrency {
   providerId     Int
   platformId     Int?
 
+  @@unique(fields: [resourceId, providerId], name: "resource")
   @@map("cryptocurrency")
 }
 
@@ -111,10 +110,18 @@ model CryptocurrencyMetadata {
   selfReportedCirculatingSupply Decimal?              @db.Decimal()
   selfReportedMarketCap         Decimal?              @db.Decimal()
   selfReportedTags              String?
-  numMarketPair                 Int?
+  numMarketPairs                Int?
   circulatingSupply             Decimal?              @db.Decimal()
   totalSupply                   Decimal?              @db.Decimal()
   maxSupply                     Decimal?              @db.Decimal()
+  volume24h                     Float?
+  volumeChange24h               Float?
+  pricePercentageChange24h      Float?
+  pricePercentageChange1h       Float?
+  pricePercentageChange30d      Float?
+  pricePercentageChange60d      Float?
+  pricePercentageChange90d      Float?
+  marketCapDominance            Float?
   contractAddress               BlockchainContracts[]
   tags                          Tags[]                @relation("TagsInMetadata")
   dateAdded                     DateTime              @db.Timestamptz()
