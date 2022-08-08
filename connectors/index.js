@@ -110,7 +110,7 @@ module.exports = {
     },
     db: { name: 'cryptocurrencyMetadata' },
     query: async (apiData) => {
-      const cryptoId = await prisma.cryptocurrency.findUnique({
+      const { id: cryptoId } = await prisma.cryptocurrency.findUnique({
         where: {
           resource: {
             providerId: 1,
@@ -168,10 +168,7 @@ module.exports = {
         dateLaunched: apiData.date_launched,
         cryptocurrency: {
           connect: {
-            resource: {
-              resourceId: apiData.id,
-              providerId: 1,
-            },
+            cryptoId,
           },
         },
         urls: {
@@ -195,7 +192,7 @@ module.exports = {
       return {
         create: data,
         where: {
-          cryptoId: cryptoId.id,
+          cryptoId,
         },
         update: data,
       };
