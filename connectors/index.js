@@ -168,7 +168,7 @@ module.exports = {
         dateLaunched: apiData.date_launched,
         cryptocurrency: {
           connect: {
-            cryptoId,
+            id: cryptoId,
           },
         },
         urls: {
