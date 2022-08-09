@@ -13,7 +13,8 @@
         "ecmaVersion": "latest"
     },
     "rules": {
-        "no-restricted-syntax": "off"
+        "no-restricted-syntax": "off",
+        "linebreak-style": 0
     },
     "plugins": [
         "jest"
