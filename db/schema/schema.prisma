@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["referentialIntegrity", "fullTextSearch", "fullTextIndex"]
+  previewFeatures = ["referentialIntegrity", "fullTextSearch", "fullTextIndex", "orderByNulls"]
 }
 
 datasource db {
@@ -375,4 +375,18 @@ model Provider {
   Cryptocurrency Cryptocurrency[]
 
   @@map("provider")
+}
+
+model SearchRank {
+  searchRankId Int @id @unique @default(autoincrement())
+  cryptoId     Int
+
+  @@map("search_rank")
+}
+
+model PageTrafficRank {
+  pageTrafficRankId Int @id @unique @default(autoincrement())
+  cryptoId          Int
+
+  @@map("page_traffic_rank")
 }

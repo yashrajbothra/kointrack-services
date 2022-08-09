@@ -51,6 +51,26 @@ const allBatches = {
         return params;
       },
     },
+    {
+      name: 'Cryptocurrency Trending Metrics',
+      url: '/v1/cryptocurrency/trending/latest',
+      interval: '600000',
+      isMultiple: true,
+      params: async (start = 1) => ({
+        limit: 200,
+        start,
+      }),
+    },
+    {
+      name: 'Cryptocurrency Most Visited Metrics',
+      url: '/v1/cryptocurrency/trending/most-visited',
+      interval: '600000',
+      isMultiple: true,
+      params: async (start = 1) => ({
+        limit: 200,
+        start,
+      }),
+    },
   ],
   'batch-3': [
     {

@@ -312,4 +312,46 @@ module.exports = {
     queryType: 'create',
   },
 
+  '/v1/cryptocurrency/trending/latest': {
+    params(params) {
+      return params;
+    },
+    db: { name: 'searchRank' },
+    query(apiData) {
+      return {
+        create: {
+          cryptoId: apiData.id,
+        },
+        update: {
+          cryptoId: apiData.id,
+        },
+        where: {
+          searchRankId: apiData.key,
+        },
+      };
+    },
+    queryType: 'upsert',
+  },
+
+  '/v1/cryptocurrency/trending/most-visited': {
+    params(params) {
+      return params;
+    },
+    db: { name: 'pageTrafficRank' },
+    query(apiData) {
+      return {
+        create: {
+          cryptoId: apiData.id,
+        },
+        update: {
+          cryptoId: apiData.id,
+        },
+        where: {
+          pageTrafficRankId: apiData.key,
+        },
+      };
+    },
+    queryType: 'upsert',
+  },
+
 };
