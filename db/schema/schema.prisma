@@ -66,16 +66,18 @@ model Cryptocurrency {
   id                     Int                     @id @unique() @default(autoincrement())
   provider               Provider                @relation(fields: [providerId], references: [id])
   resourceId             Int
-  name                   String                  @db.VarChar(256)
+  name                   String                  @db.VarChar(120)
   symbol                 String                  @db.VarChar(80)
-  slug                   String                  @unique() @db.VarChar(120)
+  slug                   String                  @unique() @db.VarChar(256)
   // Valid Values "active", "inactive", "untracked"
   status                 String                  @default("active") @db.Char(10)
   sign                   String?                 @db.VarChar(10)
+  rank                   Int?
   isActive               Boolean                 @default(true)
   cryptocurrencymetadata CryptocurrencyMetadata?
-  platform               Platform?
+  platform               Platform?               @relation(fields: [platformId], references: [parentCryptoId])
   firstHistoricalData    DateTime?
+  tokenAddress           String?                 @db.VarChar(256)
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
 
@@ -84,15 +86,15 @@ model Cryptocurrency {
   CryptoExchange CryptoExchange[]
   Exchange       Exchange[]
   providerId     Int
+  platformId     Int?
 
+  @@unique(fields: [resourceId, providerId], name: "resource")
   @@map("cryptocurrency")
 }
 
 model Platform {
-  cryptoId       Int            @id @unique()
-  parentCryptoId Int
-  tokenAddress   String         @db.VarChar(256)
-  cryptocurrency Cryptocurrency @relation(fields: [cryptoId], references: [id], onDelete: Cascade)
+  parentCryptoId Int              @id @unique
+  Cryptocurrency Cryptocurrency[]
 
   @@map("platform")
 }
@@ -104,14 +106,26 @@ model CryptocurrencyMetadata {
   description                   String                @db.Text
   category                      Category              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   urls                          Urls?                 @relation(fields: [urlsId], references: [id], onDelete: Cascade)
-  notice                        String?
-  selfReportedCirculatingSupply Float?
-  selfReportedMarketCap         Float?
+  notice                        String?               @db.Text
+  selfReportedCirculatingSupply Decimal?              @db.Decimal()
+  selfReportedMarketCap         Decimal?              @db.Decimal()
   selfReportedTags              String?
+  numMarketPairs                Int?
+  circulatingSupply             Decimal?              @db.Decimal()
+  totalSupply                   Decimal?              @db.Decimal()
+  maxSupply                     Decimal?              @db.Decimal()
+  volume24h                     Float?
+  volumeChange24h               Float?
+  pricePercentageChange24h      Float?
+  pricePercentageChange1h       Float?
+  pricePercentageChange30d      Float?
+  pricePercentageChange60d      Float?
+  pricePercentageChange90d      Float?
+  marketCapDominance            Float?
   contractAddress               BlockchainContracts[]
   tags                          Tags[]                @relation("TagsInMetadata")
-  dateAdded                     DateTime?             @db.Timestamptz()
-  dateLaunched                  DateTime              @db.Timestamptz()
+  dateAdded                     DateTime              @db.Timestamptz()
+  dateLaunched                  DateTime?             @db.Timestamptz()
   createdAt                     DateTime              @default(now())
   updatedAt                     DateTime              @updatedAt
 
@@ -164,7 +178,7 @@ model Category {
 
 model Tags {
   id        Int       @id @unique @default(autoincrement())
-  name      String    @unique
+  name      String
   slug      String    @unique
   tagsGroup TagsGroup @relation(fields: [tagsGroupId], references: [id])
 
@@ -201,15 +215,9 @@ model OHLCV {
 }
 
 model MarketData {
-  id                Int            @id @unique @default(autoincrement())
-  cryptocurrency    Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
-  rank              Int?
-  numMarketPair     Int?
-  circulatingSupply Float?
-  totalSupply       Float?
-  maxSupply         Float?
-  marketCap         Float?
-  updatedAt         DateTime       @updatedAt
+  id             Int            @id @unique @default(autoincrement())
+  cryptocurrency Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
+  updatedAt      DateTime       @updatedAt
 
   cryptocurrencyId Int
   Exchange         Exchange? @relation(fields: [exchangeId], references: [id], onDelete: NoAction)
@@ -316,33 +324,37 @@ model CryptoExchange {
 }
 
 model GlobalMetrics {
-  id                              Int    @id @unique @default(autoincrement())
-  activeCryptocurrencies          Int?
-  totalCryptocurrencies           Int?
-  activeMarketPairs               Int?
-  activeExchanges                 Int?
-  totalExchanges                  Int?
-  ethDominance                    Float?
-  btcDominance                    Float?
-  ethDominance24hPercentageChange Float?
-  btcDominance24hPercentageChange Float?
-  defiVolume24h                   Float?
-  defiVolume24hReported           Float?
-  defi24hPercentageChange         Float?
-  defiMarketCap                   Float?
-  stablecoinVolume24h             Float?
-  stablecoinVolume24hReported     Float?
-  stablecoinMarketCap             Float?
-  stablecoin24hPercentageChange   Float?
-  derivativesVolume24h            Float?
-  derivativesVolume24hReported    Float?
-  derivatives24hPercentageChange  Float?
-  totalMarketCap                  Float?
-  totalVolume24h                  Float?
-  totalVolume24hReported          Float?
-  altcoinVolume24h                Float?
-  altcoinVolume24hReported        Float?
-  altcoinMarketCap                Float?
+  id                                      Int    @id @unique @default(autoincrement())
+  activeCryptocurrencies                  Int?
+  totalCryptocurrencies                   Int?
+  activeMarketPairs                       Int?
+  activeExchanges                         Int?
+  totalExchanges                          Int?
+  ethDominance                            Float?
+  btcDominance                            Float?
+  ethDominance24hPercentageChange         Float?
+  btcDominance24hPercentageChange         Float?
+  defiVolume24h                           Float?
+  defiVolume24hReported                   Float?
+  defi24hPercentageChange                 Float?
+  defiMarketCap                           Float?
+  stablecoinVolume24h                     Float?
+  stablecoinVolume24hReported             Float?
+  stablecoinMarketCap                     Float?
+  stablecoin24hPercentageChange           Float?
+  derivativesVolume24h                    Float?
+  derivativesVolume24hReported            Float?
+  derivatives24hPercentageChange          Float?
+  totalMarketCap                          Float?
+  totalMarketCapYesterday                 Float?
+  totalMarketCapYesterdayPercentageChange Float?
+  totalVolume24h                          Float?
+  totalVolume24hReported                  Float?
+  totalVolume24hYesterday                 Float?
+  totalVolume24hYesterdayPercentageChange Float?
+  altcoinVolume24h                        Float?
+  altcoinVolume24hReported                Float?
+  altcoinMarketCap                        Float?
 
   timestamp DateTime @unique @db.Timestamptz()
   createdAt DateTime @default(now())
@@ -353,7 +365,8 @@ model GlobalMetrics {
 
 model Provider {
   id       Int     @id @unique @default(autoincrement())
-  name     String
+  name     String  @unique
+  slug     String  @unique
   baseUrl  String
   isActive Boolean @default(true)
 

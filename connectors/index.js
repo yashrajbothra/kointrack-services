@@ -1,4 +1,6 @@
-const slugify = require('slugify');
+const prisma = require('../db');
+const slugger = require('../utils/slugger');
+const deleteObjPair = require('../utils/deleteObjPair');
 
 module.exports = {
   '/v1/global-metrics/quotes/latest': {
@@ -31,7 +33,13 @@ module.exports = {
           derivativesVolume24hReported: apiData.derivatives_volume_24h_reported,
           derivatives24hPercentageChange: apiData.derivatives_24h_percentage_change,
           totalMarketCap: apiData.quote.USD.total_market_cap,
+          totalMarketCapYesterday: apiData.quote.USD.total_market_cap_yesterday,
+          totalMarketCapYesterdayPercentageChange: apiData
+            .quote.USD.total_market_cap_yesterday_percentage_change,
           totalVolume24h: apiData.quote.USD.total_volume_24h,
+          totalVolume24hYesterday: apiData.quote.USD.total_volume_24h_yesterday,
+          totalVolume24hYesterdayPercentageChange: apiData
+            .quote.USD.total_volume_24h_yesterday_percentage_change,
           totalVolume24hReported: apiData.quote.USD.total_volume_24h_reported,
           altcoinVolume24h: apiData.quote.USD.altcoin_volume_24h,
           altcoinVolume24hReported: apiData.quote.USD.altcoin_volume_24h_reported,
@@ -51,20 +59,30 @@ module.exports = {
     db: { name: 'cryptocurrency' },
     query(apiData) {
       let platformData;
-      if (apiData.platform !== null) {
+      if (apiData.platform?.id) {
         platformData = {
+          connectOrCreate:
+        {
+          where: {
+            parentCryptoId: apiData.platform.id,
+          },
           create: {
             parentCryptoId: apiData.platform.id,
-            tokenAddress: apiData.platform.token_address,
           },
+        },
         };
       }
 
       return {
         where: {
-          slug: apiData.slug,
+          resource: {
+            resourceId: apiData.id,
+            providerId: 1,
+          },
         },
-        update: {},
+        update: {
+          rank: apiData.rank,
+        },
         create: {
           provider: {
             connect: {
@@ -77,11 +95,8 @@ module.exports = {
           slug: apiData.slug,
           isActive: Boolean(apiData.is_active),
           firstHistoricalData: apiData.first_historical_data,
-          MarketData: {
-            create: {
-              rank: apiData.rank,
-            },
-          },
+          tokenAddress: apiData.platform?.token_address,
+          rank: apiData.rank,
           platform: platformData,
         },
       };
@@ -146,7 +161,7 @@ module.exports = {
     queryType: 'create',
   },
 
-  '/v1/cryptocurrency/listings/latest': {
+  '/v1/cryptocurrency/ohlcv/latest': {
     params(params) {
       return params;
     },
@@ -177,85 +192,6 @@ module.exports = {
                   create: {
                     feeType: apiData.market_pairs.fee_type,
                   },
-                },
-              },
-            },
-          },
-        },
-      };
-    },
-    queryType: 'create',
-  },
-  '/v1/exchange/info': {
-    params(params) {
-      return params;
-    },
-    db: { name: 'exchange' },
-    query(apiData) {
-      return {
-        data: {
-          name: apiData.name,
-          slug: apiData.slug,
-          ExchangeMetadata: {
-            create: {
-              logoUrl: apiData.logo,
-              description: apiData.description,
-              dateLaunched: apiData.date_launched,
-              notice: apiData.notice,
-              countries: apiData.countries,
-              fiats: apiData.fiats,
-              weeklyVisits: apiData.weekly_visits,
-            },
-          },
-          Cryptocurrency: {
-            Urls: {
-              create: {
-                website: apiData.urls.website,
-                blog: apiData.urls.blog,
-                chat: apiData.urls.chat,
-                fee: apiData.urls.fee,
-                twitter: apiData.urls.twitter,
-              },
-            },
-          },
-          ExchangeFee: {
-            makerFee: apiData.maker_fee,
-            takerFee: apiData.taker_fee,
-          },
-        },
-      };
-    },
-    queryType: 'create',
-  },
-  '/v1/exchange/market-pairs/latest': {
-    params(params) {
-      return params;
-    },
-    db: { name: 'exchange' },
-    query(apiData) {
-      return {
-        data: {
-          name: apiData.name,
-          slug: apiData.slug,
-          MarketData: {
-            create: {
-              numMarketpair: apiData.num_market_pairs,
-            },
-          },
-          Cryptocurrency: {
-            create: {
-              symbol: apiData.market_pairs.market_pair_base.currency_symbol,
-            },
-          },
-          ExchangeMetadata: {
-            create: {
-              marketPairs: apiData.market_pairs.market_pair,
-            },
-            ExchnageCategory: {
-              create: { category: apiData.market_pairs.category },
-              ExchangeFee: {
-                create: {
-                  feeType: apiData.market_pairs.fee_type,
                 },
               },
             },

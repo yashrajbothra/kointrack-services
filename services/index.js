@@ -1,43 +1,35 @@
-const Promise = require('bluebird');
-const prisma = require('../db');
+/* eslint-disable no-param-reassign */
 const instance = require('../axios/instance');
 const connectors = require('../connectors');
 const logger = require('../utils/logger');
+const addDataPromise = require('../utils/addDataPromise');
+const { addCryptocurrencyInfo, addCryptocurrencyLatest } = require('./cryptocurrency.service');
 
 const addService = async (url, isMultiple, params = {}) => {
   const mapping = connectors[url];
-  const addServiceData = await instance.get(url, { params: mapping.params({ ...params }) })
-    .then((res) => res.data.data).catch((err) => {
-      logger.error(err);
-    });
+  let chunkSize = 1;
 
-  let postedData;
+  if (Array.isArray(params)) {
+    chunkSize = params.length;
+  }
 
-  const upsertPromise = async (serviceData) => {
-    await prisma[mapping.db.name][mapping.queryType](
-      mapping.query(serviceData[0]),
-    ).then((res) => {
-      logger.info(JSON.stringify(res));
-      serviceData.shift();
-      upsertPromise(serviceData);
-    });
-  };
+  for (let chunk = 0; chunk < chunkSize; chunk += 1) {
+    (async () => {
+      const addServiceData = await instance.get(
+        url,
+        { params: mapping.params({ ...params[chunk] }) },
+      )
+        .then((res) => res.data.data).catch((err) => {
+          logger.error(err);
+        });
 
-  switch (mapping.queryType) {
-    case 'upsert':
       if (isMultiple) {
-        await upsertPromise(addServiceData);
+        await addDataPromise(mapping, addServiceData);
       } else {
-        postedData = [await prisma[mapping.db.name][mapping.queryType](
-          mapping.query(addServiceData),
-        )];
+        await addDataPromise(mapping, [addServiceData]);
       }
-      break;
-
-    default:
-      postedData = await prisma[mapping.db.name].create(mapping.query(addServiceData));
-      break;
+    })();
   }
 };
 
-module.exports = { addService };
+module.exports = { addService, addCryptocurrencyInfo, addCryptocurrencyLatest };
