@@ -85,21 +85,6 @@ const allBatches = {
         start,
       }),
     },
-  ],
-  'batch-4': [
-    {
-      name: 'Binance',
-      url: '/v1/cryptocurrency/listings/latest',
-      interval: '600000',
-      serviceName: 'addCryptocurrencyLatest',
-      isMultiple: true,
-      params: async (start = 1) => ({
-        limit: 5000,
-        start,
-      }),
-    },
-  ],
-  'batch-5': [
     {
       name: 'OHLCV',
       url: '/v2/cryptocurrency/ohlcv/latest',
@@ -130,6 +115,19 @@ const allBatches = {
         params.push({ id: paramsArr.join(',') });
         return params;
       },
+    },
+  ],
+  'batch-4': [
+    {
+      name: 'Binance',
+      url: '/v1/cryptocurrency/listings/latest',
+      interval: '600000',
+      serviceName: 'addCryptocurrencyLatest',
+      isMultiple: true,
+      params: async (start = 1) => ({
+        limit: 5000,
+        start,
+      }),
     },
   ],
 };
