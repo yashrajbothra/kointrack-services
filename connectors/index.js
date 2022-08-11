@@ -154,7 +154,7 @@ module.exports = {
             },
             create: {
               name: apiData.category,
-              slug: slugger(apiData.category, '_'),
+              slug: slugger(apiData.category),
             },
           },
         },
@@ -352,6 +352,59 @@ module.exports = {
       };
     },
     queryType: 'upsert',
+  },
+  '/v2/cryptocurrency/ohlcv/latest': {
+    params(params) {
+      return params;
+    },
+    db: { name: 'OHLCV' },
+    query: async (apiData) => {
+      const { id: cryptoId } = await prisma.cryptocurrency.findUnique({
+        select: {
+          id: true,
+        },
+        where: {
+          resource: {
+            resourceId: apiData.id,
+            providerId: 1,
+          },
+        },
+      });
+
+      const lastTwoOHCLV = await prisma.oHLCV.findMany({
+        select: {
+          closeTime: true,
+        },
+        where: {
+          cryptoId,
+        },
+        take: 2,
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const prevOhclv = lastTwoOHCLV[1] ?? null;
+
+      return {
+        data: {
+          openPrice: apiData.quote.USD.open,
+          closePrice: apiData.quote.USD.close,
+          highPrice: apiData.quote.USD.high,
+          lowPrice: apiData.quote.USD.low,
+          tradedVolume: apiData.quote.USD.volume,
+          openTime: apiData.time_open,
+          closeTime: apiData.time_close ?? prevOhclv,
+          highTime: apiData.time_high,
+          lowTime: apiData.time_low,
+          resourceLastUpdatedTime: apiData.last_updated,
+          cryptocurrency: {
+            connect: {
+              id: cryptoId,
+            },
+          },
+        },
+      };
+    },
+    queryType: 'create',
   },
 
 };

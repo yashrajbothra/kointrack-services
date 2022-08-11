@@ -198,30 +198,35 @@ model TagsGroup {
 }
 
 model OHLCV {
-  id             Int            @id @default(autoincrement())
-  cryptocurrency Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
-  openPrice      Float
-  highPrice      Float
-  lowPrice       Float
-  closePrice     Float
-  tradedVolume   Int
-  createdAt      DateTime       @db.Timestamptz()
+  id                      Int            @id @default(autoincrement())
+  cryptocurrency          Cryptocurrency @relation(fields: [cryptoId], references: [id], onDelete: Cascade)
+  openPrice               Float
+  highPrice               Float
+  lowPrice                Float
+  closePrice              Float
+  openTime                DateTime       @db.Timestamptz()
+  closeTime               DateTime?      @db.Timestamptz()
+  highTime                DateTime       @db.Timestamptz()
+  lowTime                 DateTime       @db.Timestamptz()
+  tradedVolume            Float
+  resourceLastUpdatedTime DateTime       @db.Timestamptz()
+  createdAt               DateTime       @default(now())
 
-  cryptocurrencyId Int
-  Exchange         Exchange? @relation(fields: [exchangeId], references: [id])
-  exchangeId       Int?
+  cryptoId   Int
+  Exchange   Exchange? @relation(fields: [exchangeId], references: [id])
+  exchangeId Int?
 
   @@map("ohlcv")
 }
 
 model MarketData {
   id             Int            @id @unique @default(autoincrement())
-  cryptocurrency Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
+  cryptocurrency Cryptocurrency @relation(fields: [cryptoId], references: [id], onDelete: Cascade)
   updatedAt      DateTime       @updatedAt
 
-  cryptocurrencyId Int
-  Exchange         Exchange? @relation(fields: [exchangeId], references: [id], onDelete: NoAction)
-  exchangeId       Int?
+  cryptoId   Int
+  Exchange   Exchange? @relation(fields: [exchangeId], references: [id], onDelete: NoAction)
+  exchangeId Int?
 
   @@map("market_data")
 }
@@ -257,10 +262,10 @@ model Exchange {
   MarketData       MarketData[]
   OHLCV            OHLCV[]
   ExchangeMetadata ExchangeMetadata[]
-  Cryptocurrency   Cryptocurrency     @relation(fields: [cryptocurrencyId], references: [id], onDelete: Cascade)
+  Cryptocurrency   Cryptocurrency     @relation(fields: [cryptoId], references: [id], onDelete: Cascade)
   ExchangeFee      ExchangeFee        @relation(fields: [exchangeFeeId], references: [exchangeId])
   exchangeFeeId    Int
-  cryptocurrencyId Int
+  cryptoId         Int
   CryptoExchange   CryptoExchange[]
 
   @@map("exchange")
@@ -314,12 +319,12 @@ model ExchangeFee {
 }
 
 model CryptoExchange {
-  cryptoCurrency   Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id])
-  cryptocurrencyId Int
-  exchange         Exchange       @relation(fields: [exchangeId], references: [id])
-  exchangeId       Int
+  cryptoCurrency Cryptocurrency @relation(fields: [cryptoId], references: [id])
+  cryptoId       Int
+  exchange       Exchange       @relation(fields: [exchangeId], references: [id])
+  exchangeId     Int
 
-  @@id([exchangeId, cryptocurrencyId])
+  @@id([exchangeId, cryptoId])
   @@map("crypto_exchange")
 }
 
