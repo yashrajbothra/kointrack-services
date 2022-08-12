@@ -19,7 +19,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^4.1.1",
+    "@binance/connector": "^1.12.0",
+    "@prisma/client": "^4.2.0",
     "axios": "^0.27.2",
     "bluebird": "^3.7.2",
     "cryptocurrencies": "^7.0.0",
@@ -46,7 +47,7 @@
     "eslint-plugin-jest": "^26.5.3",
     "husky": "^8.0.1",
     "jsdoc": "^3.6.11",
-    "prisma": "^4.1.1",
+    "prisma": "^4.2.0",
     "prisma-erd-generator": "^0.11.4",
     "superagent-defaults": "^0.1.14",
     "supertest": "^6.2.4"

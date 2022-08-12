@@ -154,7 +154,7 @@ module.exports = {
             },
             create: {
               name: apiData.category,
-              slug: slugger(apiData.category, '_'),
+              slug: slugger(apiData.category),
             },
           },
         },
@@ -306,6 +306,101 @@ module.exports = {
           tokenAddress: apiData.platform?.token_address,
           rank: apiData.rank,
           platform: platformData,
+        },
+      };
+    },
+    queryType: 'create',
+  },
+
+  '/v1/cryptocurrency/trending/latest': {
+    params(params) {
+      return params;
+    },
+    db: { name: 'searchRank' },
+    query(apiData) {
+      return {
+        create: {
+          cryptoId: apiData.id,
+        },
+        update: {
+          cryptoId: apiData.id,
+        },
+        where: {
+          searchRankId: apiData.key,
+        },
+      };
+    },
+    queryType: 'upsert',
+  },
+
+  '/v1/cryptocurrency/trending/most-visited': {
+    params(params) {
+      return params;
+    },
+    db: { name: 'pageTrafficRank' },
+    query(apiData) {
+      return {
+        create: {
+          cryptoId: apiData.id,
+        },
+        update: {
+          cryptoId: apiData.id,
+        },
+        where: {
+          pageTrafficRankId: apiData.key,
+        },
+      };
+    },
+    queryType: 'upsert',
+  },
+  '/v2/cryptocurrency/ohlcv/latest': {
+    params(params) {
+      return params;
+    },
+    db: { name: 'OHLCV' },
+    query: async (apiData) => {
+      const { id: cryptoId } = await prisma.cryptocurrency.findUnique({
+        select: {
+          id: true,
+        },
+        where: {
+          resource: {
+            resourceId: apiData.id,
+            providerId: 1,
+          },
+        },
+      });
+
+      const lastTwoOHCLV = await prisma.oHLCV.findMany({
+        select: {
+          closeTime: true,
+        },
+        where: {
+          cryptoId,
+        },
+        take: 2,
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const prevOhclv = lastTwoOHCLV[1] ?? null;
+
+      return {
+        data: {
+          openPrice: apiData.quote.USD.open,
+          closePrice: apiData.quote.USD.close,
+          highPrice: apiData.quote.USD.high,
+          lowPrice: apiData.quote.USD.low,
+          tradedVolume: apiData.quote.USD.volume,
+          openTime: apiData.time_open,
+          closeTime: apiData.time_close ?? prevOhclv,
+          highTime: apiData.time_high,
+          lowTime: apiData.time_low,
+          resourceLastUpdatedTime: apiData.last_updated,
+          cryptocurrency: {
+            connect: {
+              id: cryptoId,
+            },
+          },
         },
       };
     },

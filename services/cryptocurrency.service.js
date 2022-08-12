@@ -37,6 +37,30 @@ const addCryptocurrencyInfo = async (url, isMultiple, params = {}) => {
   });
 };
 
+const addCryptocurrencyOHLCV = async (url, isMultiple, params = {}) => {
+  if (params.length <= 0) return;
+  const mapping = connectors[url];
+  delay(interval).then(async () => {
+    const tempParams = params.shift();
+    const addServiceData = await instance.get(
+      url,
+      { params: mapping.params({ ...tempParams }) },
+    ).then((res) => {
+      addCryptocurrencyOHLCV(url, isMultiple, params);
+      return res.data.data;
+    }).catch((err) => {
+      addCryptocurrencyOHLCV(url, isMultiple, params);
+      logger.error(err);
+    });
+
+    const allServiceData = [];
+    Object.values(addServiceData).forEach(async (serviceData) => {
+      allServiceData.push(serviceData);
+    });
+    await addDataPromise(mapping, allServiceData);
+  });
+};
+
 const addCryptocurrencyLatest = async (url, isMultiple, params = {}) => {
   if (params.start % 5000 !== 0 && params.start !== 1) return;
   const mapping = connectors[url];
@@ -56,4 +80,4 @@ const addCryptocurrencyLatest = async (url, isMultiple, params = {}) => {
   await addDataPromise(mapping, addServiceData);
 };
 
-module.exports = { addCryptocurrencyInfo, addCryptocurrencyLatest };
+module.exports = { addCryptocurrencyInfo, addCryptocurrencyLatest, addCryptocurrencyOHLCV };
