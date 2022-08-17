@@ -24,9 +24,14 @@ const logger = winston.createLogger({
       format: winston.format.colorize({ all: true }),
     }),
     new WinstonDailyRotateFile({
-      filename: './logs/%DATE%.log',
+      filename: './logs/error/%DATE%.log',
       datePattern: 'DD-MM-YYYY',
-      level: 'warn',
+      level: 'error',
+    }),
+    new WinstonDailyRotateFile({
+      filename: './logs/info/%DATE%.log',
+      datePattern: 'DD-MM-YYYY',
+      level: 'info',
     }),
   ],
 });

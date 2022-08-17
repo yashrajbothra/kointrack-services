@@ -8,76 +8,79 @@
 const instance = require('../axios/instance');
 const connectors = require('../connectors');
 const logger = require('../utils/logger');
-const addDataPromise = require('../utils/addDataPromise');
+const addServiceData = require('../utils/addServiceData');
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 const interval = 3000;
 
-const addCryptocurrencyInfo = async (url, isMultiple, params = {}) => {
-  if (params.length <= 0) return;
+const addCryptocurrencyInfo = async (url, params = {}) => {
+  if (Object.keys(params).length === 0 || params.length <= 0) {
+    logger.error('No Params to set \n');
+    return;
+  }
   const mapping = connectors[url];
   delay(interval).then(async () => {
     const tempParams = params.shift();
-    const addServiceData = await instance.get(
+    const currServiceData = await instance.get(
       url,
-      { params: mapping.params({ ...tempParams }) },
+      { params: mapping.setParams({ ...tempParams }) },
     ).then((res) => {
-      addCryptocurrencyInfo(url, isMultiple, params);
+      addCryptocurrencyInfo(url, params);
       return res.data.data;
     }).catch((err) => {
-      addCryptocurrencyInfo(url, isMultiple, params);
+      addCryptocurrencyInfo(url, params);
       logger.error(err);
     });
 
     const allServiceData = [];
-    Object.values(addServiceData).forEach(async (serviceData) => {
+    Object.values(currServiceData).forEach(async (serviceData) => {
       allServiceData.push(serviceData);
     });
-    await addDataPromise(mapping, allServiceData);
+    await addServiceData(mapping, allServiceData);
   });
 };
 
-const addCryptocurrencyOHLCV = async (url, isMultiple, params = {}) => {
+const addCryptocurrencyOHLCV = async (url, params = {}) => {
   if (params.length <= 0) return;
   const mapping = connectors[url];
   delay(interval).then(async () => {
     const tempParams = params.shift();
-    const addServiceData = await instance.get(
+    const currServiceData = await instance.get(
       url,
-      { params: mapping.params({ ...tempParams }) },
+      { params: mapping.setParams({ ...tempParams }) },
     ).then((res) => {
-      addCryptocurrencyOHLCV(url, isMultiple, params);
+      addCryptocurrencyOHLCV(url, params);
       return res.data.data;
     }).catch((err) => {
-      addCryptocurrencyOHLCV(url, isMultiple, params);
+      addCryptocurrencyOHLCV(url, params);
       logger.error(err);
     });
 
     const allServiceData = [];
-    Object.values(addServiceData).forEach(async (serviceData) => {
+    Object.values(currServiceData).forEach(async (serviceData) => {
       allServiceData.push(serviceData);
     });
-    await addDataPromise(mapping, allServiceData);
+    await addServiceData(mapping, allServiceData);
   });
 };
 
-const addCryptocurrencyLatest = async (url, isMultiple, params = {}) => {
+const addCryptocurrencyLatest = async (url, params = {}) => {
   if (params.start % 5000 !== 0 && params.start !== 1) return;
   const mapping = connectors[url];
-  const addServiceData = await instance.get(
+  const currServiceData = await instance.get(
     url,
-    { params: await mapping.params({ ...params }) },
+    { params: await mapping.setParams({ ...setParams }) },
   ).then((res) => {
-    addCryptocurrencyLatest(url, isMultiple, {
+    addCryptocurrencyLatest(url, {
       start: (
-        res.config.params.start + res.data.data.length
+        res.config.setParams.start + res.data.data.length
       ) - 1,
     });
     return res.data.data;
   }).catch((err) => {
     logger.error(err);
   });
-  await addDataPromise(mapping, addServiceData);
+  await addServiceData(mapping, currServiceData);
 };
 
 module.exports = { addCryptocurrencyInfo, addCryptocurrencyLatest, addCryptocurrencyOHLCV };

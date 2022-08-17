@@ -1,10 +1,22 @@
-const prisma = require('../db');
-const slugger = require('../utils/slugger');
-const deleteObjPair = require('../utils/deleteObjPair');
+const prisma = require('./db');
+const slugger = require('./utils/slugger');
+const deleteObjPair = require('./utils/deleteObjPair');
+
+/**
+ * Template of a connectors
+ * 'url-path' : [
+ *  {
+ *    'db': {
+ *      'name' : 'Name of the DB',
+ *    }
+ *    'query' : (apiData) => {  } (used to generate prisma query),
+ *    'queryType' : 'type of query used in prisma',
+ *  }
+ * ]
+ */
 
 module.exports = {
   '/v1/global-metrics/quotes/latest': {
-    params() {},
     db: {
       name: 'globalMetrics',
     },
@@ -53,9 +65,6 @@ module.exports = {
   },
 
   '/v1/cryptocurrency/map': {
-    params(params) {
-      return params;
-    },
     db: { name: 'cryptocurrency' },
     query(apiData) {
       let platformData;
@@ -105,9 +114,6 @@ module.exports = {
   },
 
   '/v2/cryptocurrency/info': {
-    params(params) {
-      return params;
-    },
     db: { name: 'cryptocurrencyMetadata' },
     query: async (apiData) => {
       const { id: cryptoId } = await prisma.cryptocurrency.findUnique({
@@ -145,7 +151,6 @@ module.exports = {
       if (tagsPromises === undefined) tagsPromises = [];
       let tagsData = await Promise.all(tagsPromises);
       tagsData = tagsData.map((tags) => deleteObjPair(tags, ['name', 'slug', 'tagsGroupId']));
-
       const data = {
         category: {
           connectOrCreate: {
@@ -201,9 +206,6 @@ module.exports = {
   },
 
   '/v1/cryptocurrency/listings/latest': {
-    params(params) {
-      return params;
-    },
     db: { name: 'cryptocurrencyMetadata' },
     query: async (apiData) => {
       const crypto = await prisma.cryptocurrency.findUnique({
@@ -270,9 +272,6 @@ module.exports = {
   },
 
   '/v1/cryptocurrency/ohlcv/latest': {
-    params(params) {
-      return params;
-    },
     db: { name: 'cryptocurrency' },
     query(apiData) {
       let platformData;
@@ -313,9 +312,6 @@ module.exports = {
   },
 
   '/v1/cryptocurrency/trending/latest': {
-    params(params) {
-      return params;
-    },
     db: { name: 'searchRank' },
     query(apiData) {
       return {
@@ -334,9 +330,6 @@ module.exports = {
   },
 
   '/v1/cryptocurrency/trending/most-visited': {
-    params(params) {
-      return params;
-    },
     db: { name: 'pageTrafficRank' },
     query(apiData) {
       return {
@@ -354,9 +347,6 @@ module.exports = {
     queryType: 'upsert',
   },
   '/v2/cryptocurrency/ohlcv/latest': {
-    params(params) {
-      return params;
-    },
     db: { name: 'OHLCV' },
     query: async (apiData) => {
       const { id: cryptoId } = await prisma.cryptocurrency.findUnique({
