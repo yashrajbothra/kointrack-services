@@ -4,3 +4,4 @@ logs
 .husky
 ecosystem.config.js
 *.heapprofile
+.vscode
