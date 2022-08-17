@@ -1,5 +1,5 @@
 const logger = require('./utils/logger');
-const batches = require('./batches');
+const batches = require('./constants/batches');
 const service = require('./services');
 
 const args = process.argv.slice(2);
