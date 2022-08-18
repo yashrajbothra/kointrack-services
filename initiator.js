@@ -24,7 +24,5 @@ for (const batch in batches) {
         await startService(currJob);
       }, currJob.interval);
     });
-  } else {
-    logger.info(`${currBatchName} Not Available`);
   }
 }
