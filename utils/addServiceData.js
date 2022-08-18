@@ -9,17 +9,16 @@ const addServiceData = async (service, serviceData, key = 1) => {
   }
 
   serviceData[0].key = key;
-  prisma[service.db.name][service.queryType](
-    await service.query(serviceData[0]),
-  ).then((res) => {
-    logger.info(JSON.stringify(res));
+  try {
+    const result = await prisma[service.db.name][service.queryType](
+      await service.query(serviceData[0]),
+    );
+    logger.info(JSON.stringify(result));
     serviceData.shift();
-    if (serviceData.length > 0) {
-      addServiceData(service, serviceData, key + 1);
-    }
-  }, (err) => {
-    logger.error(err);
-  });
+    await addServiceData(service, serviceData, key + 1);
+  } catch (err) {
+    logger.error(`Error running the service prisma query : \n ${err}`);
+  }
 };
 
 module.exports = addServiceData;
