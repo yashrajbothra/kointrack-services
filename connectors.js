@@ -215,11 +215,6 @@ module.exports = {
 
   '/v1/cryptocurrency/listings/latest': {
     db: { name: 'cryptocurrencyMetadata' },
-    setParams: (params) => ({
-      start: (params.start + (params?.length ?? 0)) - 1,
-      interval: 3000,
-      ...params,
-    }),
     query: async (apiData) => {
       const crypto = await prisma.cryptocurrency.findUnique({
         select: {
@@ -376,7 +371,7 @@ module.exports = {
 
       const lastTwoOHCLV = await prisma.oHLCV.findMany({
         select: {
-          closeTime: true,
+          openTime: true,
         },
         where: {
           cryptoId,
@@ -385,7 +380,7 @@ module.exports = {
         orderBy: { createdAt: 'desc' },
       });
 
-      const prevOhclv = lastTwoOHCLV[1] ?? null;
+      const prevOhclv = lastTwoOHCLV[0] ?? null;
 
       return {
         data: {
@@ -395,7 +390,7 @@ module.exports = {
           lowPrice: apiData.quote.USD.low,
           tradedVolume: apiData.quote.USD.volume,
           openTime: apiData.time_open,
-          closeTime: apiData.time_close ?? prevOhclv,
+          closeTime: apiData.time_close ?? prevOhclv?.openTime,
           highTime: apiData.time_high,
           lowTime: apiData.time_low,
           resourceLastUpdatedTime: apiData.last_updated,
