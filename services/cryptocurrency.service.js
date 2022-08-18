@@ -18,12 +18,12 @@ const addCryptocurrencyInfo = async (url, params = {}) => {
     logger.error('No Params to set \n');
     return;
   }
-  const mapping = connectors[url];
+  const currService = connectors[url];
   delay(interval).then(async () => {
     const tempParams = params.shift();
     const currServiceData = await instance.get(
       url,
-      { params: mapping.setParams({ ...tempParams }) },
+      { params: currService.setParams({ ...tempParams }) },
     ).then((res) => {
       addCryptocurrencyInfo(url, params);
       return res.data.data;
@@ -36,44 +36,19 @@ const addCryptocurrencyInfo = async (url, params = {}) => {
     Object.values(currServiceData).forEach(async (serviceData) => {
       allServiceData.push(serviceData);
     });
-    await addServiceData(mapping, allServiceData);
-  });
-};
-
-const addCryptocurrencyOHLCV = async (url, params = {}) => {
-  if (params.length <= 0) return;
-  const mapping = connectors[url];
-  delay(interval).then(async () => {
-    const tempParams = params.shift();
-    const currServiceData = await instance.get(
-      url,
-      { params: mapping.setParams({ ...tempParams }) },
-    ).then((res) => {
-      addCryptocurrencyOHLCV(url, params);
-      return res.data.data;
-    }).catch((err) => {
-      addCryptocurrencyOHLCV(url, params);
-      logger.error(err);
-    });
-
-    const allServiceData = [];
-    Object.values(currServiceData).forEach(async (serviceData) => {
-      allServiceData.push(serviceData);
-    });
-    await addServiceData(mapping, allServiceData);
+    await addServiceData(currService, allServiceData);
   });
 };
 
 const addCryptocurrencyLatest = async (url, params = {}) => {
-  if (params.start % 5000 !== 0 && params.start !== 1) return;
   const mapping = connectors[url];
   const currServiceData = await instance.get(
     url,
-    { params: await mapping.setParams({ ...setParams }) },
+    { params: await mapping.setParams({ ...params }) },
   ).then((res) => {
     addCryptocurrencyLatest(url, {
       start: (
-        res.config.setParams.start + res.data.data.length
+        res.config.params.start + res.data.data.length
       ) - 1,
     });
     return res.data.data;
@@ -83,4 +58,4 @@ const addCryptocurrencyLatest = async (url, params = {}) => {
   await addServiceData(mapping, currServiceData);
 };
 
-module.exports = { addCryptocurrencyInfo, addCryptocurrencyLatest, addCryptocurrencyOHLCV };
+module.exports = { addCryptocurrencyInfo, addCryptocurrencyLatest };

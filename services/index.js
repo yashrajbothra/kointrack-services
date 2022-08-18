@@ -13,26 +13,26 @@ const addService = async (url, params = {}) => {
   if (!params?.length) params = [params];
   const currService = connectors[url];
 
-  for (let chunk = 0; chunk < (params.length ?? 1); chunk += 1) {
-    (async () => {
-      logger.warn(`calling ${url} for ${chunk + 1} time\n`);
+  let chunk = 0;
+  for await (const param of params) {
+    logger.warn(`calling ${url} for ${chunk + 1} time\n`);
 
-      if (!currService.setParams) currService.setParams = (data) => data;
+    if (!currService.setParams) currService.setParams = (data) => data;
 
-      const currServiceData = await instance.get(
-        url,
-        { params: currService.setParams(params[chunk]) },
-      )
-        .then((res) => res.data.data).catch((err) => {
-          logger.error(err);
-        });
+    const currServiceData = await instance.get(
+      url,
+      { params: currService.setParams(param[chunk]) },
+    )
+      .then((res) => res.data.data).catch((err) => {
+        logger.error(err);
+      });
 
-      if (Array.isArray(currServiceData)) {
-        await addServiceData(currService, currServiceData);
-      } else {
-        await addServiceData(currService, [currServiceData]);
-      }
-    })();
+    if (Array.isArray(currServiceData)) {
+      await addServiceData(currService, currServiceData);
+    } else {
+      await addServiceData(currService, [currServiceData]);
+    }
+    chunk += 1;
   }
 };
 
