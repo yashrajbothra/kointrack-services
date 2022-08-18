@@ -1,5 +1,5 @@
 const logger = require('./utils/logger');
-const batches = require('./constants/jobs');
+const batches = require('./batches');
 const service = require('./services');
 
 const args = process.argv.slice(2);
@@ -24,5 +24,7 @@ for (const batch in batches) {
         await startService(currJob);
       }, currJob.interval);
     });
+  } else {
+    logger.info(`${currBatchName} Not Available`);
   }
 }
