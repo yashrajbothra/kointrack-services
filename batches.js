@@ -3,13 +3,7 @@ const jobs = require('./constants/jobs');
 /**
  * Template of a batch
  * 'batch-name' : [
- *  {
- *    'name' : 'Name of the Service' (used only to display in log),
- *    'url' : 'Url of the providers api' (used to call and get data from provider),
- *    'interval' : 'Interval in which the service will loop (in Milliseconds),
- *    'getParams' : (params) => { return params } (Generate the parameters based on this function),
- *    'serviceName' : 'serviceName' (Name of custom service. By default is 'addService'),
- *  }
+ *    job.name
  * ]
  */
 

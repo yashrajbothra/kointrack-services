@@ -3,15 +3,13 @@ const logger = require('../utils/logger');
 
 /**
  * Template of a batch
- * 'batch-name' : [
- *  {
+ * jobs = {
  *    'name' : 'Name of the Service' (used only to display in log),
  *    'url' : 'Url of the providers api' (used to call and get data from provider),
  *    'interval' : 'Interval in which the service will loop (in Milliseconds),
  *    'getParams' : (params) => { return params } (Generate the parameters based on this function),
  *    'serviceName' : 'serviceName' (Name of custom service. By default is 'addService'),
  *  }
- * ]
  */
 
 const jobs = {};
@@ -21,16 +19,18 @@ jobs.GLOBAL_METRICS_LATEST = {
   url: '/v1/global-metrics/quotes/latest',
   interval: '600000',
 };
+
 jobs.CRYPTOCURRENCY_MAP = {
-  name: 'Cryptocurrency Datamap',
+  name: 'Cryptocurrency Map',
   url: '/v1/cryptocurrency/map',
   interval: '600000',
 };
+
 jobs.CRYPTOCURRENCY_METADATA = {
   name: 'Cryptocurrency Metadata',
   url: '/v2/cryptocurrency/info',
   interval: '600000',
-  serviceName: 'addCryptocurrencyInfo',
+  serviceName: 'addSeviceMultiParams',
   getParams: async () => {
     const resources = await prisma.cryptocurrency.findMany({
       select: {
@@ -62,21 +62,23 @@ jobs.CRYPTOCURRENCY_METADATA = {
     return params;
   },
 };
+
 jobs.CRYPTOCURRENCY_MARKET_DETAILS = {
   name: 'Cryptocurrency Market Details',
   url: '/v1/cryptocurrency/listings/latest',
   interval: '600000',
-  serviceName: 'addCryptocurrencyLatest',
+  // serviceName: 'addSeviceMultiParams',
   getParams: async (start = 1) => ({
     limit: 5000,
     start,
   }),
 };
+
 jobs.OHLCV = {
   name: 'OHLCV',
   url: '/v2/cryptocurrency/ohlcv/latest',
   interval: '900000',
-  serviceName: 'addCryptocurrencyOHLCV',
+  serviceName: 'addSeviceMultiParams',
   getParams: async () => {
     const resources = await prisma.cryptocurrency.findMany({
       select: {
@@ -103,16 +105,7 @@ jobs.OHLCV = {
     return params;
   },
 };
-jobs.BINANCE = {
-  name: 'Binance',
-  url: '/v1/cryptocurrency/listings/latest',
-  interval: '600000',
-  serviceName: 'addCryptocurrencyLatest',
-  getParams: async (start = 1) => ({
-    limit: 5000,
-    start,
-  }),
-};
+
 jobs.CRYPTOCURRENCY_TRENDING_METRICS = {
   name: 'Cryptocurrency Trending Metrics',
   url: '/v1/cryptocurrency/trending/latest',
@@ -122,6 +115,7 @@ jobs.CRYPTOCURRENCY_TRENDING_METRICS = {
     start,
   }),
 };
+
 jobs.CRYPTOCURRENCY_MOST_VISITED_METRICS = {
   name: 'Cryptocurrency Most Visited Metrics',
   url: '/v1/cryptocurrency/trending/most-visited',
@@ -131,4 +125,5 @@ jobs.CRYPTOCURRENCY_MOST_VISITED_METRICS = {
     start,
   }),
 };
+
 module.exports = jobs;

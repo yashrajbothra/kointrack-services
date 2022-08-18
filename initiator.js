@@ -6,7 +6,7 @@ const args = process.argv.slice(2);
 const currBatchName = args.pop();
 const startService = async (currJob) => {
   logger.warn(`${currJob.name} is started \n`);
-  await service[currJob.serviceName](currJob.url, await currJob.getParams());
+  await service[currJob.serviceName](currJob.url, await currJob.getParams(), currJob.interval);
   logger.warn(`${currJob.name} is ended`);
 };
 
@@ -16,7 +16,7 @@ for (const batch in batches) {
     currBatch.forEach(async (job) => {
       const currJob = job;
       // setting default values for service function
-      if (!currJob.getParams) currJob.getParams = async () => {};
+      if (!currJob.getParams) currJob.getParams = async (params) => params;
       if (!currJob.serviceName) currJob.serviceName = 'addService';
 
       await startService(currJob);

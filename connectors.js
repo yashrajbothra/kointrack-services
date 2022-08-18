@@ -1,6 +1,7 @@
 const prisma = require('./db');
 const slugger = require('./utils/slugger');
 const deleteObjPair = require('./utils/deleteObjPair');
+const logger = require('./utils/logger');
 
 /**
  * Template of a connectors
@@ -115,6 +116,7 @@ module.exports = {
 
   '/v2/cryptocurrency/info': {
     db: { name: 'cryptocurrencyMetadata' },
+    interval: 3000,
     query: async (apiData) => {
       const { id: cryptoId } = await prisma.cryptocurrency.findUnique({
         where: {
@@ -125,32 +127,36 @@ module.exports = {
         },
       });
 
-      let tagsPromises = apiData.tags?.map(async (tag, i) => {
-        const tagsData = await prisma.tags.upsert({
-          create: {
-            name: apiData['tag-names'][i],
-            tagsGroup: {
-              connectOrCreate: {
-                create: {
-                  name: apiData['tag-groups'][i],
+      const tagsData = [];
+      if (apiData.tags) {
+        for await (const [i, tag] of apiData.tags.entries()) {
+          try {
+            const currTagData = await prisma.tags.upsert({
+              create: {
+                name: apiData['tag-names'][i],
+                tagsGroup: {
+                  connectOrCreate: {
+                    create: {
+                      name: apiData['tag-groups'][i],
+                    },
+                    where: {
+                      name: apiData['tag-groups'][i],
+                    },
+                  },
                 },
-                where: {
-                  name: apiData['tag-groups'][i],
-                },
+                slug: tag,
               },
-            },
-            slug: tag,
-          },
-          where: {
-            slug: tag,
-          },
-          update: {},
-        });
-        return tagsData;
-      });
-      if (tagsPromises === undefined) tagsPromises = [];
-      let tagsData = await Promise.all(tagsPromises);
-      tagsData = tagsData.map((tags) => deleteObjPair(tags, ['name', 'slug', 'tagsGroupId']));
+              where: {
+                slug: tag,
+              },
+              update: {},
+            });
+            tagsData.push(deleteObjPair(currTagData, ['name', 'slug', 'tagsGroupId']));
+          } catch (err) {
+            logger.error(`Tags Data has some error check the data below:- \n ${err}`);
+          }
+        }
+      }
       const data = {
         category: {
           connectOrCreate: {
@@ -194,12 +200,14 @@ module.exports = {
         },
       };
 
+      const updateData = deleteObjPair(data, ['cryptocurrency']);
+
       return {
         create: data,
         where: {
           cryptoId,
         },
-        update: data,
+        update: updateData,
       };
     },
     queryType: 'upsert',
@@ -207,6 +215,11 @@ module.exports = {
 
   '/v1/cryptocurrency/listings/latest': {
     db: { name: 'cryptocurrencyMetadata' },
+    setParams: (params) => ({
+      start: (params.start + (params?.length ?? 0)) - 1,
+      interval: 3000,
+      ...params,
+    }),
     query: async (apiData) => {
       const crypto = await prisma.cryptocurrency.findUnique({
         select: {
