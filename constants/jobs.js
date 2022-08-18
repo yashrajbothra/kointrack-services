@@ -14,17 +14,19 @@ const logger = require('../utils/logger');
  * ]
  */
 
-const GLOBAL_MATRICS_LATEST = {
+const jobs = {};
+
+jobs.GLOBAL_METRICS_LATEST = {
   name: 'Global Metrics Latest',
   url: '/v1/global-metrics/quotes/latest',
   interval: '600000',
 };
-const CRYPTOCURRENCY_MAPDATA = {
+jobs.CRYPTOCURRENCY_MAP = {
   name: 'Cryptocurrency Datamap',
   url: '/v1/cryptocurrency/map',
   interval: '600000',
 };
-const CRYPTOCURRENCY_METADATA = {
+jobs.CRYPTOCURRENCY_METADATA = {
   name: 'Cryptocurrency Metadata',
   url: '/v2/cryptocurrency/info',
   interval: '600000',
@@ -60,7 +62,7 @@ const CRYPTOCURRENCY_METADATA = {
     return params;
   },
 };
-const CRYPTOCURRENCY_MARKET_DETAILS = {
+jobs.CRYPTOCURRENCY_MARKET_DETAILS = {
   name: 'Cryptocurrency Market Details',
   url: '/v1/cryptocurrency/listings/latest',
   interval: '600000',
@@ -70,7 +72,7 @@ const CRYPTOCURRENCY_MARKET_DETAILS = {
     start,
   }),
 };
-const OHLCV = {
+jobs.OHLCV = {
   name: 'OHLCV',
   url: '/v2/cryptocurrency/ohlcv/latest',
   interval: '900000',
@@ -101,7 +103,7 @@ const OHLCV = {
     return params;
   },
 };
-const BINANCE = {
+jobs.BINANCE = {
   name: 'Binance',
   url: '/v1/cryptocurrency/listings/latest',
   interval: '600000',
@@ -111,7 +113,7 @@ const BINANCE = {
     start,
   }),
 };
-const CRYPTOCURRENCY_TRENDING_MATRICS = {
+jobs.CRYPTOCURRENCY_TRENDING_METRICS = {
   name: 'Cryptocurrency Trending Metrics',
   url: '/v1/cryptocurrency/trending/latest',
   interval: '600000',
@@ -120,7 +122,7 @@ const CRYPTOCURRENCY_TRENDING_MATRICS = {
     start,
   }),
 };
-const CRYPTOCURRENCY_MOST_VISITED_MATRICS = {
+jobs.CRYPTOCURRENCY_MOST_VISITED_METRICS = {
   name: 'Cryptocurrency Most Visited Metrics',
   url: '/v1/cryptocurrency/trending/most-visited',
   interval: '600000',
@@ -129,11 +131,4 @@ const CRYPTOCURRENCY_MOST_VISITED_MATRICS = {
     start,
   }),
 };
-
-const jobs = {};
-jobs['batch-1'] = [GLOBAL_MATRICS_LATEST, CRYPTOCURRENCY_MAPDATA];
-jobs['batch-2'] = [CRYPTOCURRENCY_METADATA];
-jobs['batch-3'] = [CRYPTOCURRENCY_MARKET_DETAILS, OHLCV];
-jobs['batch-4'] = [BINANCE];
-jobs['batch-5'] = [CRYPTOCURRENCY_TRENDING_MATRICS, CRYPTOCURRENCY_MOST_VISITED_MATRICS];
 module.exports = jobs;
