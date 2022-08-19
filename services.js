@@ -1,11 +1,9 @@
-/* eslint-disable no-shadow */
-/* eslint-disable no-promise-executor-return */
 /* eslint-disable no-param-reassign */
-const instance = require('../axios/instance');
-const connectors = require('../connectors');
-const logger = require('../utils/logger');
-const addServiceData = require('../utils/addServiceData');
-const { addCryptocurrencyInfo, addCryptocurrencyLatest } = require('./cryptocurrency.service');
+/* eslint-disable no-promise-executor-return */
+const instance = require('./axios/instance');
+const connectors = require('./connectors');
+const logger = require('./utils/logger');
+const addServiceData = require('./utils/addServiceData');
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -42,10 +40,8 @@ const addSeviceMultiParams = async (url, params = {}) => {
     return;
   }
 
-  // if (params.start % 5000 !== 0 && params.start !== 1) return;
-
   const currService = connectors[url];
-  if (!currService?.setParams) currService.setParams = (params) => params;
+  if (!currService?.setParams) currService.setParams = (data) => data;
 
   await delay(currService.interval);
 
@@ -70,6 +66,4 @@ const addSeviceMultiParams = async (url, params = {}) => {
 module.exports = {
   addService,
   addSeviceMultiParams,
-  addCryptocurrencyInfo,
-  addCryptocurrencyLatest,
 };

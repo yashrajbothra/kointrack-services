@@ -12,7 +12,7 @@ module.exports = {
   'batch-2': [jobs.CRYPTOCURRENCY_MAP],
   'batch-3': [jobs.CRYPTOCURRENCY_METADATA],
   'batch-4': [jobs.CRYPTOCURRENCY_TRENDING_METRICS],
-  'batch-6': [jobs.CRYPTOCURRENCY_MARKET_DETAILS],
-  'batch-7': [jobs.OHLCV],
-  'batch-8': [jobs.CRYPTOCURRENCY_MOST_VISITED_METRICS],
+  'batch-5': [jobs.CRYPTOCURRENCY_MARKET_DETAILS],
+  'batch-6': [jobs.OHLCV],
+  'batch-7': [jobs.CRYPTOCURRENCY_MOST_VISITED_METRICS],
 };
