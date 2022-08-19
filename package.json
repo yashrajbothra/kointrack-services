@@ -34,7 +34,7 @@
   },
   "prisma": {
     "seed": "node src/db/seed.js",
-    "schema": ".src/db/schema/schema.prisma"
+    "schema": "./src/db/schema/schema.prisma"
   },
   "devDependencies": {
     "@faker-js/faker": "^7.3.0",
