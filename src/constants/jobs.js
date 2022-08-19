@@ -14,12 +14,6 @@ const logger = require('../utils/logger');
 
 const jobs = {};
 
-jobs.GLOBAL_METRICS_LATEST = {
-  name: 'Global Metrics Latest',
-  url: '/v1/global-metrics/quotes/latest',
-  interval: '600000', // 10Min,
-};
-
 jobs.CRYPTOCURRENCY_MAP = {
   name: 'Cryptocurrency Map',
   url: '/v1/cryptocurrency/map',
@@ -74,6 +68,26 @@ jobs.CRYPTOCURRENCY_MARKET_DETAILS = {
   }),
 };
 
+jobs.CRYPTOCURRENCY_TRENDING_METRICS = {
+  name: 'Cryptocurrency Trending Metrics',
+  url: '/v1/cryptocurrency/trending/latest',
+  interval: '600000', // 1H
+  getParams: async (start = 1) => ({
+    limit: 200,
+    start,
+  }),
+};
+
+jobs.CRYPTOCURRENCY_MOST_VISITED_METRICS = {
+  name: 'Cryptocurrency Most Visited Metrics',
+  url: '/v1/cryptocurrency/trending/most-visited',
+  interval: '600000', // 1H
+  getParams: async (start = 1) => ({
+    limit: 200,
+    start,
+  }),
+};
+
 jobs.OHLCV = {
   name: 'OHLCV',
   url: '/v2/cryptocurrency/ohlcv/latest',
@@ -106,24 +120,10 @@ jobs.OHLCV = {
   },
 };
 
-jobs.CRYPTOCURRENCY_TRENDING_METRICS = {
-  name: 'Cryptocurrency Trending Metrics',
-  url: '/v1/cryptocurrency/trending/latest',
-  interval: '600000', // 1H
-  getParams: async (start = 1) => ({
-    limit: 200,
-    start,
-  }),
-};
-
-jobs.CRYPTOCURRENCY_MOST_VISITED_METRICS = {
-  name: 'Cryptocurrency Most Visited Metrics',
-  url: '/v1/cryptocurrency/trending/most-visited',
-  interval: '600000', // 1H
-  getParams: async (start = 1) => ({
-    limit: 200,
-    start,
-  }),
+jobs.GLOBAL_METRICS_LATEST = {
+  name: 'Global Metrics Latest',
+  url: '/v1/global-metrics/quotes/latest',
+  interval: '600000', // 10Min,
 };
 
 module.exports = jobs;
