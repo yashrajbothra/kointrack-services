@@ -1,9 +1,9 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-promise-executor-return */
-const instance = require('./axios/instance');
+const instance = require('./instance');
 const connectors = require('./connectors');
-const logger = require('./utils/logger');
-const addServiceData = require('./utils/addServiceData');
+const logger = require('../utils/logger');
+const addServiceData = require('../utils/addServiceData');
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 

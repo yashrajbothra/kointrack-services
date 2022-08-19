@@ -1,6 +1,6 @@
 const logger = require('./utils/logger');
-const batches = require('./batches');
-const service = require('./services');
+const batches = require('./src/batches');
+const service = require('./src/services');
 
 const args = process.argv.slice(2);
 const currBatchName = args.pop();
