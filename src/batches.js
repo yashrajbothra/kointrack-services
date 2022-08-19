@@ -1,4 +1,4 @@
-const jobs = require('../constants/jobs');
+const jobs = require('./constants/jobs');
 
 /**
  * Template of a batch

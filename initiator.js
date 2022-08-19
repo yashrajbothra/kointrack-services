@@ -1,4 +1,4 @@
-const logger = require('./utils/logger');
+const logger = require('./src/utils/logger');
 const batches = require('./src/batches');
 const service = require('./src/services');
 

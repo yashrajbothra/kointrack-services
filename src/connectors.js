@@ -1,7 +1,7 @@
-const prisma = require('../db');
-const slugger = require('../utils/slugger');
-const deleteObjPair = require('../utils/deleteObjPair');
-const logger = require('../utils/logger');
+const prisma = require('./db');
+const slugger = require('./utils/slugger');
+const deleteObjPair = require('./utils/deleteObjPair');
+const logger = require('./utils/logger');
 
 /**
  * Template of a connectors
