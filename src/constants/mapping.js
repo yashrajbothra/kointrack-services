@@ -20,6 +20,7 @@ const logger = require('../utils/logger');
  */
 
 const connectors = {};
+
 connectors.GLOBAL_METRICS_LATEST = {
   db: {
     name: 'globalMetrics',
@@ -74,14 +75,14 @@ connectors.CRYPTOCURRENCY_MAP = {
     if (apiData.platform?.id) {
       platformData = {
         connectOrCreate:
-        {
-          where: {
-            parentCryptoId: apiData.platform.id,
-          },
-          create: {
-            parentCryptoId: apiData.platform.id,
-          },
+      {
+        where: {
+          parentCryptoId: apiData.platform.id,
         },
+        create: {
+          parentCryptoId: apiData.platform.id,
+        },
+      },
       };
     }
 
@@ -215,11 +216,6 @@ connectors.CRYPTOCURRENCY_METADATA = {
 };
 connectors.CRYPPTOCURRENCY_LISTINGS_LATEST = {
   db: { name: 'cryptocurrencyMetadata' },
-  setParams: (params) => ({
-    start: (params.start + (params?.length ?? 0)) - 1,
-    interval: 3000,
-    ...params,
-  }),
   query: async (apiData) => {
     const crypto = await prisma.cryptocurrency.findUnique({
       select: {
@@ -283,40 +279,51 @@ connectors.CRYPPTOCURRENCY_LISTINGS_LATEST = {
   },
   queryType: 'update',
 };
-connectors.OHLCV_V1 = {
-  db: { name: 'cryptocurrency' },
-  query(apiData) {
-    let platformData;
-    if (apiData.platform?.id) {
-      platformData = {
-        connectOrCreate:
-        {
-          where: {
-            parentCryptoId: apiData.platform.id,
-          },
-          create: {
-            parentCryptoId: apiData.platform.id,
-          },
+connectors.OHLCV = {
+  db: { name: 'OHLCV' },
+  query: async (apiData) => {
+    const { id: cryptoId } = await prisma.cryptocurrency.findUnique({
+      select: {
+        id: true,
+      },
+      where: {
+        resource: {
+          resourceId: apiData.id,
+          providerId: 1,
         },
-      };
-    }
+      },
+    });
+
+    const lastTwoOHCLV = await prisma.oHLCV.findMany({
+      select: {
+        openTime: true,
+      },
+      where: {
+        cryptoId,
+      },
+      take: 2,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const prevOhclv = lastTwoOHCLV[0] ?? null;
 
     return {
       data: {
-        provider: {
+        openPrice: apiData.quote.USD.open,
+        closePrice: apiData.quote.USD.close,
+        highPrice: apiData.quote.USD.high,
+        lowPrice: apiData.quote.USD.low,
+        tradedVolume: apiData.quote.USD.volume,
+        openTime: apiData.time_open,
+        closeTime: apiData.time_close ?? prevOhclv?.openTime,
+        highTime: apiData.time_high,
+        lowTime: apiData.time_low,
+        resourceLastUpdatedTime: apiData.last_updated,
+        cryptocurrency: {
           connect: {
-            id: 1,
+            id: cryptoId,
           },
         },
-        resourceId: apiData.id,
-        name: apiData.name,
-        symbol: apiData.symbol,
-        slug: apiData.slug,
-        isActive: Boolean(apiData.is_active),
-        firstHistoricalData: apiData.first_historical_data,
-        tokenAddress: apiData.platform?.token_address,
-        rank: apiData.rank,
-        platform: platformData,
       },
     };
   },
@@ -355,56 +362,6 @@ connectors.CRYPTOCURRENCY_MOST_VIISTED = {
     };
   },
   queryType: 'upsert',
-};
-connectors.OHLCV_LATEST_V2 = {
-  db: { name: 'OHLCV' },
-  query: async (apiData) => {
-    const { id: cryptoId } = await prisma.cryptocurrency.findUnique({
-      select: {
-        id: true,
-      },
-      where: {
-        resource: {
-          resourceId: apiData.id,
-          providerId: 1,
-        },
-      },
-    });
-
-    const lastTwoOHCLV = await prisma.oHLCV.findMany({
-      select: {
-        closeTime: true,
-      },
-      where: {
-        cryptoId,
-      },
-      take: 2,
-      orderBy: { createdAt: 'desc' },
-    });
-
-    const prevOhclv = lastTwoOHCLV[1] ?? null;
-
-    return {
-      data: {
-        openPrice: apiData.quote.USD.open,
-        closePrice: apiData.quote.USD.close,
-        highPrice: apiData.quote.USD.high,
-        lowPrice: apiData.quote.USD.low,
-        tradedVolume: apiData.quote.USD.volume,
-        openTime: apiData.time_open,
-        closeTime: apiData.time_close ?? prevOhclv,
-        highTime: apiData.time_high,
-        lowTime: apiData.time_low,
-        resourceLastUpdatedTime: apiData.last_updated,
-        cryptocurrency: {
-          connect: {
-            id: cryptoId,
-          },
-        },
-      },
-    };
-  },
-  queryType: 'create',
 };
 
 module.exports = connectors;

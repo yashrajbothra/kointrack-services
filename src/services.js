@@ -51,12 +51,12 @@ const addSeviceMultiParams = async (url, params = {}) => {
       url,
       { params: currService.setParams({ ...tempParams }) },
     );
-    await addSeviceMultiParams(url, params);
     const allServiceData = [];
     Object.values(currServiceData.data.data).forEach(async (serviceData) => {
       allServiceData.push(serviceData);
     });
     await addServiceData(currService, allServiceData);
+    await addSeviceMultiParams(url, params);
   } catch (err) {
     await addSeviceMultiParams(url, params);
     logger.error(err);

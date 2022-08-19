@@ -16,19 +16,15 @@ const startService = async (currJob) => {
   logger.warn(`${currJob.name} is ended`);
 };
 
-for (const batch in batches) {
-  if (batch === currBatchName) {
-    const currBatch = batches[currBatchName];
-    currBatch.forEach(async (job) => {
-      const currJob = job;
-      // setting default values for service function
-      if (!currJob.getParams) currJob.getParams = async (params) => params;
-      if (!currJob.serviceName) currJob.serviceName = 'addService';
+const currBatch = batches[currBatchName];
+currBatch.forEach(async (job) => {
+  const currJob = job;
+  // setting default values for service function
+  if (!currJob.getParams) currJob.getParams = async (params) => params;
+  if (!currJob.serviceName) currJob.serviceName = 'addService';
 
-      await startService(currJob);
-      setInterval(async () => {
-        await startService(currJob);
-      }, currJob.interval);
-    });
-  }
-}
+  await startService(currJob);
+  setInterval(async () => {
+    await startService(currJob);
+  }, currJob.interval);
+});

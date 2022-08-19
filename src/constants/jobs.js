@@ -62,10 +62,25 @@ jobs.CRYPTOCURRENCY_MARKET_DETAILS = {
   url: '/v1/cryptocurrency/listings/latest',
   interval: '3600000', // 1H
   serviceName: 'addSeviceMultiParams',
-  getParams: async (start = 1) => ({
-    limit: 5000,
-    start,
-  }),
+  getParams: async () => {
+    const { resourceId: cryptoCount } = await prisma.cryptocurrency.count({
+      select: {
+        resourceId: true,
+      },
+      where: {
+        providerId: 1,
+      },
+    });
+
+    const params = [];
+    for (let i = 1; i <= cryptoCount; i += 5000) {
+      params.push({
+        limit: 5000,
+        start: i,
+      });
+    }
+    return params;
+  },
 };
 
 jobs.CRYPTOCURRENCY_TRENDING_METRICS = {
