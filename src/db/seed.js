@@ -8,12 +8,17 @@ const prisma = new PrismaClient();
 async function main() {
   logger.info('CREATING...');
   for (const elem of providers) {
-    await prisma.provider.create({
-      data: elem,
+    const isProvider = await prisma.provider.findUnique({
+      where: { name: elem.name },
     });
+
+    if (!isProvider) {
+      await prisma.provider.create({
+        data: elem,
+      });
+    }
   }
 }
-
 main()
   .catch((e) => {
     throw e;
