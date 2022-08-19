@@ -15,7 +15,7 @@ const addServiceData = async (service, serviceData, key = 1) => {
     );
     logger.info(JSON.stringify(result));
     serviceData.shift();
-    await addServiceData(service, serviceData, key + 1);
+    if (serviceData.length > 0) { await addServiceData(service, serviceData, key + 1); }
   } catch (err) {
     logger.error(`Error running the service prisma query : \n ${err}`);
   }
