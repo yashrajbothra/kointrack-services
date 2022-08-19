@@ -12,9 +12,8 @@
     "prepare": "husky install",
     "db:push": "npx prisma db push",
     "db:pull": "npx prisma db pull",
-    "seed": "node db/seed.js",
-    "test": "set NODE_ENV=test && jest",
-    "docs": "jsdoc -c jsdoc.json"
+    "seed": "node src/db/seed.js",
+    "test": "set NODE_ENV=test && jest"
   },
   "author": "",
   "license": "ISC",
