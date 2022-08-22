@@ -16,4 +16,5 @@ module.exports = {
   '/v1/cryptocurrency/trending/latest': connectors.CRYPTOCURRENCY_TRENDING_LATEST,
   '/v1/cryptocurrency/trending/most-visited': connectors.CRYPTOCURRENCY_MOST_VIISTED,
   '/v2/cryptocurrency/ohlcv/latest': connectors.OHLCV,
+  '/v1/exchange/map': connectors.EXCHANGE_MAP,
 };

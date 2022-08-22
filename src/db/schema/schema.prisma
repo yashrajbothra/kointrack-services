@@ -84,7 +84,6 @@ model Cryptocurrency {
   MarketData     MarketData[]
   OHLCV          OHLCV[]
   CryptoExchange CryptoExchange[]
-  Exchange       Exchange[]
   providerId     Int
   platformId     Int?
 
@@ -250,72 +249,62 @@ model ExchangeRates {
 }
 
 model Exchange {
-  id        Int      @unique() @default(autoincrement())
-  name      String   @db.VarChar(256)
-  slug      String   @db.VarChar(256)
+  id                  Int       @unique() @default(autoincrement())
+  name                String    @db.VarChar(256)
+  slug                String    @db.VarChar(256)
+  firstHistoricalData DateTime? @db.Timestamptz()
+  lastHistoricalData  DateTime? @db.Timestamptz()
+  provider            Provider  @relation(fields: [providerId], references: [id])
   //Valid values are ('active','inactive','untracked','tracked')
-  status    String   @db.VarChar(10)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status              String    @default("active") @db.Char(10)
+  isActive            Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   MarketData       MarketData[]
   OHLCV            OHLCV[]
-  ExchangeMetadata ExchangeMetadata[]
-  Cryptocurrency   Cryptocurrency     @relation(fields: [cryptoId], references: [id], onDelete: Cascade)
-  ExchangeFee      ExchangeFee        @relation(fields: [exchangeFeeId], references: [exchangeId])
-  exchangeFeeId    Int
-  cryptoId         Int
+  ExchangeMetadata ExchangeMetadata?
   CryptoExchange   CryptoExchange[]
+  resourceId       Int
+  providerId       Int
 
+  @@unique(fields: [resourceId, providerId], name: "resource")
   @@map("exchange")
 }
 
 model ExchangeCategory {
-  id                             Int               @unique @default(autoincrement())
-  name                           String            @unique @db.VarChar(256)
-  slug                           String            @unique
-  category                       String            @db.VarChar(256)
-  ExchangeMetadata               ExchangeMetadata? @relation(fields: [exchangeMetadataExchangeMetaId], references: [exchangeMetaId])
-  exchangeMetadataExchangeMetaId Int?
+  id                 Int               @unique @default(autoincrement())
+  name               String            @unique @db.VarChar(256)
+  slug               String            @unique
+  category           String            @db.VarChar(256)
+  ExchangeMetadata   ExchangeMetadata? @relation(fields: [exchangeMetadataId], references: [exchangeMetaId])
+  exchangeMetadataId Int
 
   @@map("exchange_category")
 }
 
 model ExchangeMetadata {
-  exchangeMetaId      Int       @id @unique
-  Exchange            Exchange  @relation(fields: [exchangeMetaId], references: [id])
-  logoUrl             String    @db.Text
-  description         String    @db.Text
-  notice              String?
-  rank                Int?
-  marketPairs         String?   @db.VarChar(100)
-  markets             Int?
-  firstHistoricalData DateTime? @db.Timestamptz()
-  lastHistoricalData  DateTime? @db.Timestamptz()
-  weeklyVisits        Int
-  dateLaunched        DateTime  @db.Timestamptz()
+  exchangeMetaId Int      @unique
+  Exchange       Exchange @relation(fields: [exchangeMetaId], references: [id])
+  logoUrl        String   @db.Text
+  description    String   @db.Text
+  notice         String?
+  rank           Int?
+  marketPairs    String?  @db.VarChar(100)
+  markets        Int?
+  weeklyVisits   Int
+  exchangeId     Int      @id @unique
+  feeType        String   @db.VarChar(256)
+  makerFee       Float
+  takerFee       Float
+  dateLaunched   DateTime @db.Timestamptz()
 
-  Urls Urls @relation(fields: [UrlsId], references: [id])
+  Urls             Urls?              @relation(fields: [UrlsId], references: [id], onDelete: Cascade)
+  ExchangeCategory ExchangeCategory[]
 
-  UrlsId             Int
-  exchangeCategoryId Int
-  ExchnageFee        ExchangeFee[]
-  ExchangeCategory   ExchangeCategory[]
+  UrlsId Int
 
   @@map("exchange_metadata")
-}
-
-model ExchangeFee {
-  exchangeId         Int               @id @unique
-  feeType            String            @db.VarChar(256)
-  makerFee           Float
-  takerFee           Float
-  ExchangeMetadata   ExchangeMetadata? @relation(fields: [exchangeMetadataId], references: [exchangeMetaId])
-  exchangeMetadataId Int?
-  Exchange           Exchange[]
-
-  @@map("exchange_fee")
 }
 
 model CryptoExchange {
@@ -378,6 +367,7 @@ model Provider {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   Cryptocurrency Cryptocurrency[]
+  Exchange       Exchange[]
 
   @@map("provider")
 }

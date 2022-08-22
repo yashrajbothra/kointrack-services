@@ -363,5 +363,33 @@ connectors.CRYPTOCURRENCY_MOST_VIISTED = {
   },
   queryType: 'upsert',
 };
-
+connectors.EXCHANGE_MAP = {
+  db: { name: 'exchange' },
+  query(apiData) {
+    return {
+      where: {
+        resource: {
+          resourceId: apiData.id,
+          providerId: 2,
+        },
+      },
+      update: {
+        isActive: Boolean(apiData.is_active),
+      },
+      create: {
+        provider: {
+          connect: {
+            id: 2,
+          },
+        },
+        resourceId: apiData.id,
+        name: apiData.name,
+        slug: apiData.slug,
+        firstHistoricalData: apiData.first_historical_data,
+        lastHistoricalData: apiData.last_historical_data,
+      },
+    };
+  },
+  queryType: 'upsert',
+};
 module.exports = connectors;
