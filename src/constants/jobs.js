@@ -141,4 +141,10 @@ jobs.GLOBAL_METRICS_LATEST = {
   interval: '600000', // 10Min,
 };
 
+jobs.EXCHANGE_MAP = {
+  name: 'Exchange Map',
+  url: '/v1/exchange/map',
+  interval: '86400000', // 24H
+};
+
 module.exports = jobs;

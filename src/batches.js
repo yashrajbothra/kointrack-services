@@ -16,4 +16,5 @@ module.exports = {
     jobs.CRYPTOCURRENCY_METADATA,
   ],
   'batch-3': [jobs.OHLCV, jobs.GLOBAL_METRICS_LATEST],
+  'batch-4': [jobs.EXCHANGE_MAP],
 };
